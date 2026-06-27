@@ -1,0 +1,135 @@
+Metadata-Version: 2.4
+Name: mcp-1panel
+Version: 0.2.0
+Summary: MCP Server for 1Panel - manage your 1Panel server through MCP protocol
+License: MIT
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: mcp>=1.0.0
+Requires-Dist: requests>=2.28.0
+Dynamic: license-file
+
+# mcp-1panel
+
+通过 MCP 协议管理 1Panel 面板。25 个工具，覆盖 18 个 API 模块。
+
+## 安装
+
+### 从 GitHub 安装
+
+```bash
+git clone https://github.com/EdaNad113/kanade.git
+cd kanade/agent/tools/MCP/mcp-1panel
+pip install .
+```
+
+### 可编辑安装（开发用，改代码即时生效）
+
+```bash
+pip install -e .
+```
+
+## 环境变量
+
+| 变量 | 说明 | 必填 |
+|------|------|------|
+| `PANEL_HOST` | 1Panel 面板地址（如 `http://localhost:9999`） | ✅ |
+| `PANEL_API_KEY` | API 接口密钥 | ✅ |
+
+## 使用
+
+```bash
+export PANEL_HOST=http://your-panel:port
+export PANEL_API_KEY=***
+mcp-1panel
+```
+
+## MCP Host 配置
+
+### Hermes Agent
+
+```bash
+hermes config set mcp_servers.panel-manager.command "mcp-1panel"
+hermes config set mcp_servers.panel-manager.transport stdio
+```
+
+### Claude Desktop / Cursor
+
+```json
+{
+  "mcpServers": {
+    "panel-manager": {
+      "command": "mcp-1panel",
+      "env": {
+        "PANEL_HOST": "http://your-panel:port",
+        "PANEL_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+## 认证原理
+
+```
+Token = md5("1panel" + API-Key + UnixTimestamp)
+```
+
+请求头: `1Panel-Token` + `1Panel-Timestamp`
+
+对应代码见 `panel_client.py`。
+
+## 工具清单
+
+| 工具 | 说明 |
+|------|------|
+| `panel_overview` | 面板总览 — 系统/CPU/内存/磁盘/应用数 |
+| `panel_websites` | 网站列表 — 域名/SSL/状态 |
+| `panel_containers` | Docker 容器列表 |
+| `panel_images` | Docker 镜像列表 |
+| `panel_compose` | Compose 项目列表 |
+| `panel_databases` | 数据库列表 |
+| `panel_apps` | 已安装应用 |
+| `panel_disks` | 磁盘分区详情 |
+| `panel_firewall` | 防火墙规则 |
+| `panel_processes` | 容器进程状态 |
+| `panel_monitor` | 实时监控 |
+| `panel_ssh` | SSH 配置 |
+| `panel_cronjobs` | 计划任务 |
+| `panel_backups` | 备份记录 |
+| `panel_mcp_servers` | MCP Server 列表 |
+| `panel_ai_agents` | AI 智能体 |
+| `panel_ollama` | Ollama 模型 |
+| `panel_logs` | 操作日志 |
+| `panel_files` | 文件浏览 |
+| `panel_settings` | 面板设置 |
+| `panel_openresty` | OpenResty 状态 |
+| `panel_runtimes` | 运行环境 |
+| `panel_fail2ban` | Fail2ban 状态 |
+| `panel_ftp` | FTP 账号 |
+| `panel_clamav` | ClamAV 杀毒 |
+
+## 项目结构
+
+```
+mcp-1panel/
+├── pyproject.toml          # 包定义 v0.1.0
+├── src/mcp_1panel/
+│   ├── __init__.py         # 导出 PanelClient + __version__
+│   ├── __main__.py         # 快捷入口
+│   ├── mcp_server.py       # 25 个工具 + 6 个 Resource
+│   └── panel_client.py     # API 客户端
+├── docs/
+│   ├── INDEX.md            # 开发文档索引
+│   ├── api-manual.html     # 1Panel 官方 API 文档
+│   └── api-swagger.json    # 完整 Swagger（603 端点）
+├── README.md
+├── LICENSE
+├── .gitignore
+└── .env.example
+```
+
+## 许可
+
+MIT

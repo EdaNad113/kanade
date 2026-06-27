@@ -1,0 +1,12 @@
+name: conversation_logger
+display_name: 对话记录器
+desc: 全量捕获对话日志到 skill 目录，按会话 ID 分类存储。附带日记生成页面和文件管理器，可选 AI 提供商直接调用 API 生成日记。
+author: Soulter
+version: v2.6.0
+repo: ""
+astrbot_version: ">=4.0.0"
+pages:
+  - name: diary
+    title: 日记生成
+  - name: files
+    title: 文件管理

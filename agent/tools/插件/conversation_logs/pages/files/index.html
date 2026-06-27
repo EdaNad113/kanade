@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文件管理</title>
+<style>
+  :root, [data-theme="dark"] {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-card: #1e2a4a;
+    --bg-input: #0f3460;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0b0;
+    --text-muted: #6b7280;
+    --accent: #4f8cff;
+    --accent-hover: #3a7bf5;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --border: #2a3a5e;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header h1 { font-size: 17px; font-weight: 600; }
+  .header .sub { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+  .content { max-width: 960px; margin: 0 auto; padding: 20px 24px; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .card-title { font-size: 15px; font-weight: 600; }
+  .card-desc { font-size: 12px; color: var(--text-muted); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 16px; border: none; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-ghost {
+    background: var(--bg-input); color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--accent); }
+  .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+  .btn-danger:hover { background: rgba(239,68,68,0.1); }
+  .btn-sm { padding: 4px 12px; font-size: 12px; }
+
+  .file-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px; border-radius: 6px;
+    font-size: 13px; transition: background 0.15s;
+  }
+  .file-item:hover { background: rgba(255,255,255,0.04); }
+  .file-item.clickable { cursor: pointer; }
+  .file-item.clickable:hover { background: rgba(79,140,255,0.1); }
+  .file-item .icon { width: 20px; text-align: center; flex-shrink: 0; }
+  .file-item .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-item .meta { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+  .file-item.dir { font-weight: 600; color: var(--accent); }
+
+  .editor-area { display: none; }
+  .editor-area.visible { display: block; }
+  .editor-toolbar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; background: var(--bg-secondary);
+    border: 1px solid var(--border); border-bottom: none;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  }
+  .editor-toolbar .path { font-size: 12px; color: var(--text-muted); flex: 1; }
+  textarea#editor {
+    width: 100%; min-height: 350px; padding: 14px;
+    background: var(--bg-secondary); border: 1px solid var(--border);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    color: var(--text-primary); font-family: 'Consolas','Cascadia Code',monospace;
+    font-size: 13px; line-height: 1.6; resize: vertical;
+    outline: none; tab-size: 2;
+  }
+  #save-status { margin-top: 8px; font-size: 12px; }
+
+  .empty { color: var(--text-muted); font-size: 13px; text-align: center; padding: 30px; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>📁 文件管理</h1>
+  <span class="sub">conversation_logs</span>
+</div>
+<div class="content">
+  <div class="card">
+    <div class="card-header">
+      <div style="flex:1">
+        <div class="card-title">浏览文件</div>
+        <div class="card-desc" id="root-path"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="loadTree()">🔄 刷新</button>
+    </div>
+    <div id="file-tree"><div class="empty">⏳ 加载中...</div></div>
+  </div>
+
+  <div class="card editor-area" id="editor-card">
+    <div class="editor-toolbar">
+      <span class="path" id="editor-path"></span>
+      <button class="btn btn-primary btn-sm" onclick="saveFile()">💾 保存</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteFile()">🗑️ 删除</button>
+    </div>
+    <textarea id="editor" placeholder="选择一个文件查看内容..."></textarea>
+    <div id="save-status"></div>
+  </div>
+</div>
+
+<script src="/api/plugin/page/bridge-sdk.js"></script>
+<script>
+(async () => {
+  await AstrBotPluginPage.ready();
+  loadTree();
+})();
+
+let currentPath = null;
+
+async function loadTree() {
+  const tree = document.getElementById('file-tree');
+  tree.innerHTML = '<div class="empty">⏳ 加载中...</div>';
+
+  try {
+    const data = await AstrBotPluginPage.apiGet('/diary/files');
+    const items = data?.items || [];
+    document.getElementById('root-path').textContent = (data?.root || '').replace(/\\/g, '/');
+
+    if (items.length === 0) {
+      tree.innerHTML = '<div class="empty">(空)</div>';
+      return;
+    }
+
+    let html = '';
+    for (const item of items) {
+      const indent = item.path.split('/').length - 1;
+      const icon = item.type === 'dir' ? '📁' : '📄';
+      const cls = item.type === 'dir' ? 'dir' : 'clickable';
+      const meta = item.type === 'file' ? `${item.size}  ${item.mtime}` : '';
+      html += `<div class="file-item ${cls}" style="padding-left:${10 + indent * 22}px"` +
+              (item.type === 'file' ? ` onclick="openFile('${item.path.replace(/'/g, "\\'")}')"` : '') +
+              '>' +
+              `<span class="icon">${icon}</span>` +
+              `<span class="name">${esc(item.name)}</span>` +
+              (meta ? `<span class="meta">${meta}</span>` : '') +
+              '</div>';
+    }
+    tree.innerHTML = html;
+  } catch (err) {
+    tree.innerHTML = `<div class="empty" style="color:var(--danger)">❌ ${esc(err.message || err)}</div>`;
+  }
+}
+
+async function openFile(path) {
+  currentPath = path;
+  const card = document.getElementById('editor-card');
+  const editor = document.getElementById('editor');
+  card.classList.add('visible');
+  document.getElementById('editor-path').textContent = path;
+  editor.value = '⏳ 加载中...';
+  editor.disabled = true;
+  document.getElementById('save-status').textContent = '';
+
+  try {
+    const data = await AstrBotPluginPage.apiGet('/diary/files/read', { path });
+    editor.value = data?.content || '';
+    editor.disabled = false;
+    editor.focus();
+  } catch (err) {
+    editor.value = `❌ ${err.message || err}`;
+  }
+}
+
+async function saveFile() {
+  if (!currentPath) return;
+  const editor = document.getElementById('editor');
+  const status = document.getElementById('save-status');
+  status.textContent = '⏳ 保存中...';
+  status.style.color = 'var(--text-muted)';
+
+  try {
+    await AstrBotPluginPage.apiPost('/diary/files/save', { path: currentPath, content: editor.value });
+    status.textContent = '✅ 保存成功';
+    status.style.color = 'var(--success)';
+    loadTree();
+  } catch (err) {
+    status.textContent = `❌ ${err.message || err}`;
+    status.style.color = 'var(--danger)';
+  }
+}
+
+async function deleteFile() {
+  if (!currentPath) return;
+  if (!confirm(`确定删除 ${currentPath} ？`)) return;
+  const status = document.getElementById('save-status');
+  status.textContent = '⏳ 删除中...';
+  status.style.color = 'var(--text-muted)';
+
+  try {
+    await AstrBotPluginPage.apiPost('/diary/files/delete', { path: currentPath });
+    document.getElementById('editor-card').classList.remove('visible');
+    currentPath = null;
+    loadTree();
+  } catch (err) {
+    status.textContent = `❌ ${err.message || err}`;
+    status.style.color = 'var(--danger)';
+  }
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>

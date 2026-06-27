@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日记生成器</title>
+<style>
+  /* ─── AstrBot Dark Theme Variables ─── */
+  :root, [data-theme="dark"] {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-card: #1e2a4a;
+    --bg-input: #0f3460;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0b0;
+    --text-muted: #6b7280;
+    --accent: #4f8cff;
+    --accent-hover: #3a7bf5;
+    --accent-glow: rgba(79, 140, 255, 0.15);
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --border: #2a3a5e;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 0;
+  }
+  .app-header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .app-header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--accent), #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .app-header .subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+  .app-content {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px 24px;
+  }
+
+  /* ─── Step Cards ─── */
+  .step-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+  .step-card:hover { border-color: var(--accent); }
+  .step-card.disabled { opacity: 0.5; pointer-events: none; }
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .step-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .step-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .step-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* ─── Controls ─── */
+  .file-select {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .file-select:focus { border-color: var(--accent); }
+  .file-select option { background: var(--bg-secondary); color: var(--text-primary); }
+  .file-select optgroup { color: var(--accent); font-weight: 600; }
+
+  .date-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .date-input:focus { border-color: var(--accent); }
+  .date-input::placeholder { color: var(--text-muted); }
+
+  .preview-box {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--text-secondary);
+    margin-top: 12px;
+    display: none;
+  }
+  .preview-box.visible { display: block; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 0 20px var(--accent-glow); }
+  .btn-primary:disabled {
+    background: #334;
+    color: #667;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .btn-secondary {
+    background: var(--bg-input);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--accent); }
+
+  /* ─── Status & Progress ─── */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .status-bar.idle { display: none; }
+  .status-bar.loading { border-color: var(--accent); }
+  .status-bar.success { border-color: var(--success); color: var(--success); }
+  .status-bar.error { border-color: var(--danger); color: var(--danger); }
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-top: 2px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── Result ─── */
+  .result-box {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-top: 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.8;
+    font-size: 14px;
+    display: none;
+  }
+  .result-box.visible { display: block; }
+  .result-box h2, .result-box h3, .result-box h4 {
+    color: var(--accent);
+    margin: 16px 0 8px;
+  }
+  .result-box h2:first-child { margin-top: 0; }
+  .result-box hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 16px 0;
+  }
+  .result-box strong { color: var(--text-primary); }
+
+  .result-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* ─── Empty State ─── */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-state p { font-size: 14px; }
+
+  /* ─── Scrollbar ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 640px) {
+    .app-content { padding: 12px; }
+    .step-card { padding: 14px; }
+    .btn { width: 100%; justify-content: center; }
+    .result-actions .btn { width: auto; }
+  }
+
+  /* ─── Error Banner ─── */
+  .error-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--danger);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+  }
+ .error-banner-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+ .error-banner-content { flex: 1; min-width: 0; }
+ .error-banner-title {
+   font-size: 14px;
+   font-weight: 700;
+   color: var(--danger);
+   margin-bottom: 4px;
+ }
+ .error-banner-msg {
+   font-size: 13px;
+   color: var(--text-secondary);
+   line-height: 1.5;
+   white-space: pre-wrap;
+   word-break: break-word;
+ }
+ .error-banner-close {
+   background: none;
+   border: none;
+   color: var(--text-muted);
+   font-size: 16px;
+   cursor: pointer;
+   padding: 2px 6px;
+   border-radius: 4px;
+  .error-banner-close { background: none; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
+  .error-banner-close:hover { background: rgba(255,255,255,0.1); }
+</style>
+</head>
+<body>
+<div class="app-header">
+  <h1>📝 日记生成器</h1>
+  <span class="subtitle" id="header-status">conversation_logs</span>
+</div>
+
+<div class="app-content">
+  <!-- Error Banner (hidden by default) -->
+  <div class="error-banner" id="error-banner" style="display:none">
+    <div class="error-banner-icon">⚠️</div>
+    <div class="error-banner-content">
+      <div class="error-banner-title">插件错误</div>
+      <div class="error-banner-msg" id="error-msg"></div>
+    </div>
+    <button class="error-banner-close" onclick="this.parentElement.style.display='none'">✕</button>
+  </div>
+
+  <!-- Step 1: Select Log -->
+  <div class="step-card" id="step-log">
+    <div class="step-header">
+      <span class="step-number">1</span>
+      <div>
+        <div class="step-title">选择对话日志</div>
+        <div class="step-desc">选择要处理的对话记录文件</div>
+      </div>
+      <button class="btn btn-secondary" onclick="refreshLogs()" style="margin-left:auto;padding:6px 14px;font-size:12px;">🔄 刷新</button>
+    </div>
+    <select class="file-select" id="log-select" onchange="onLogSelect()">
+      <option value="">— 请选择日志文件 —</option>
+    </select>
+    <div class="preview-box" id="log-preview"></div>
+  </div>
+
+  <!-- Step 2: Select Prompt -->
+  <div class="step-card" id="step-prompt">
+    <div class="step-header">
+      <span class="step-number">2</span>
+      <div>
+        <div class="step-title">选择提示词模板</div>
+        <div class="step-desc">选择 AI 生成日记时使用的格式和风格指令</div>
+      </div>
+    </div>
+    <select class="file-select" id="prompt-select" onchange="onPromptSelect()">
+      <option value="">— 请选择模板 —</option>
+    </select>
+    <div class="preview-box" id="prompt-preview"></div>
+  </div>
+
+  <!-- Step 3: AI 提供商 -->
+  <div class="step-card" id="step-provider">
+    <div class="step-header">
+      <span class="step-number">3</span>
+      <div>
+        <div class="step-title">选择 AI 提供商</div>
+        <div class="step-desc">读取 AstrBot 配置中的 AI 提供商并选用</div>
+      </div>
+      <button class="btn btn-secondary" onclick="refreshProviders()" style="margin-left:auto;padding:6px 14px;font-size:12px;">🔄 读取提供商</button>
+    </div>
+    <select class="file-select" id="provider-select" onchange="onProviderSelect()">
+      <option value="">— 请先点击「读取提供商」—</option>
+    </select>
+    <div id="provider-detail" style="margin-top:12px;display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div>
+          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;">API 地址</label>
+          <input class="date-input" id="api-base-input" type="text" placeholder="API Base URL" readonly>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;">API Key</label>
+          <input class="date-input" id="api-key-input" type="password" placeholder="API Key" readonly>
+        </div>
+      </div>
+      <div style="margin-top:8px;">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;">模型</label>
+        <select class="file-select" id="model-select">
+          <option value="">— 选择模型 —</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: Input Date -->
+  <div class="step-card" id="step-date">
+    <div class="step-header">
+      <span class="step-number">4</span>
+      <div>
+        <div class="step-title">输入日期</div>
+        <div class="step-desc">日记对应的日期（如：06.20）</div>
+      </div>
+    </div>
+    <input class="date-input" id="date-input" type="text" placeholder="例如：06.20" maxlength="10">
+  </div>
+
+  <!-- Step 5: Generate -->
+  <div class="step-card" id="step-generate">
+    <div class="step-header">
+      <span class="step-number">5</span>
+      <div>
+        <div class="step-title">生成日记</div>
+        <div class="step-desc">处理日志并调用 AI 生成日记，保存到技能目录</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="generate-btn" onclick="generateDiary()">
+      ✨ 开始生成
+    </button>
+    <div class="status-bar idle" id="status-bar">
+      <span class="spinner" id="status-spinner"></span>
+      <span id="status-text">处理中...</span>
+    </div>
+  </div>
+</div>
+
+  <!-- Result -->
+  <div class="result-box" id="result-box">
+    <div id="result-content"></div>
+    <div class="result-actions">
+      <button class="btn btn-secondary" onclick="copyResult()">📋 复制</button>
+      <button class="btn btn-secondary" onclick="downloadResult()">⬇️ 下载</button>
+    </div>
+  </div>
+</div>
+
+<script src="/api/plugin/page/bridge-sdk.js"></script>
+<script>
+(async () => {
+  await AstrBotPluginPage.ready();
+
+  // Apply theme
+  const ctx = AstrBotPluginPage.getContext();
+  if (ctx?.isDark) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+  // Listen for theme changes
+  AstrBotPluginPage.onContext((newCtx) => {
+    if (typeof newCtx.isDark === 'boolean') {
+      document.documentElement.setAttribute('data-theme', newCtx.isDark ? 'dark' : 'light');
+    }
+  });
+
+  // Load initial data
+  await Promise.all([refreshLogs(), refreshPrompts(), checkStatus(), restoreLastUsed()]);
+})();
+
+// ─── State ───
+let logsCache = {};
+let logContentCache = {};
+let promptsCache = {};
+
+// ─── Status Check ───
+async function checkStatus() {
+  const statusEl = document.getElementById('header-status');
+  try {
+    const data = await AstrBotPluginPage.apiGet('/diary/status');
+    const banner = document.getElementById('error-banner');
+    const msgEl = document.getElementById('error-msg');
+
+    if (!data?.init_ok) {
+      const errors = data?.errors || ['插件初始化失败，请检查 AstrBot 日志'];
+      msgEl.textContent = errors.join('\n');
+      banner.style.display = 'flex';
+      statusEl.textContent = '⚠️ 错误';
+      statusEl.style.color = 'var(--danger)';
+    } else {
+      banner.style.display = 'none';
+      statusEl.textContent = '✅ 正常';
+      statusEl.style.color = 'var(--success)';
+    }
+  } catch (err) {
+    // API not reachable — maybe plugin not fully loaded yet
+    console.warn('Status check failed:', err);
+  }
+}
+
+// ─── Restore Last Used ───
+async function restoreLastUsed() {
+  try {
+    const data = await AstrBotPluginPage.apiGet('/diary/last_used');
+    if (!data) return;
+
+    // 恢复提示词模板
+    if (data.prompt_path) {
+      await waitForElement('prompt-select');
+      const ps = document.getElementById('prompt-select');
+      // Wait for prompts to load, then select
+      setTimeout(() => {
+        for (const opt of ps.options) {
+          if (opt.value === data.prompt_path) {
+            ps.value = data.prompt_path;
+            onPromptSelect();
+            break;
+          }
+        }
+      }, 500);
+    }
+
+    // 恢复 AI 配置
+    if (data.provider_id) {
+      await waitForElement('provider-select');
+      // First load providers
+      await refreshProviders();
+      const pr = document.getElementById('provider-select');
+      for (const opt of pr.options) {
+        if (opt.value === data.provider_id) {
+          pr.value = data.provider_id;
+          onProviderSelect();
+          break;
+        }
+      }
+      // Restore model
+      if (data.model) {
+        setTimeout(() => {
+          const ms = document.getElementById('model-select');
+          for (const opt of ms.options) {
+            if (opt.value === data.model) {
+              ms.value = data.model;
+              break;
+            }
+          }
+        }, 200);
+      }
+    }
+  } catch (err) {
+    console.warn('Restore last used failed:', err);
+  }
+}
+
+function waitForElement(id) {
+  return new Promise(resolve => {
+    if (document.getElementById(id)) return resolve();
+    const observer = new MutationObserver(() => {
+      if (document.getElementById(id)) {
+        observer.disconnect();
+        resolve();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  });
+}
+
+// ─── Log List ───
+async function refreshLogs() {
+  const select = document.getElementById('log-select');
+  select.innerHTML = '<option value="">⏳ 加载中...</option>';
+  select.disabled = true;
+
+  try {
+    const data = await AstrBotPluginPage.apiGet('/diary/logs');
+    const logs = data?.logs || [];
+
+    logsCache = {};
+    logContentCache = {};
+
+    select.innerHTML = '<option value="">— 请选择日志文件 —</option>';
+
+    if (logs.length === 0) {
+      select.innerHTML = '<option value="">— 暂无日志文件 —</option>';
+      select.disabled = false;
+      return;
+    }
+
+    // Group by date
+    const groups = {};
+    for (const log of logs) {
+      const dateKey = log.date || '未知日期';
+      if (!groups[dateKey]) groups[dateKey] = [];
+      groups[dateKey].push(log);
+    }
+
+    for (const [date, items] of Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]))) {
+      const optgroup = document.createElement('optgroup');
+      optgroup.label = `📅 ${date}`;
+      for (const item of items) {
+        const opt = document.createElement('option');
+        opt.value = item.path;
+        opt.textContent = `[${item.platform}] ${item.session} — ${item.size}`;
+        logsCache[item.path] = item;
+        optgroup.appendChild(opt);
+      }
+      select.appendChild(optgroup);
+    }
+  } catch (err) {
+    console.error('Failed to load logs:', err);
+    select.innerHTML = '<option value="">❌ 加载失败，请检查插件状态</option>';
+  }
+  select.disabled = false;
+}
+
+async function onLogSelect() {
+  const select = document.getElementById('log-select');
+  const preview = document.getElementById('log-preview');
+  const path = select.value;
+
+  if (!path) {
+    preview.classList.remove('visible');
+    preview.textContent = '';
+    return;
+  }
+
+  preview.classList.add('visible');
+  preview.textContent = '⏳ 加载中...';
+
+  try {
+    let content = logContentCache[path];
+    if (!content) {
+      const data = await AstrBotPluginPage.apiGet('/diary/read_log', { path: path });
+      content = data?.content || '(空内容)';
+      logContentCache[path] = content;
+    }
+    // Show last part (processed preview)
+    preview.textContent = content.length > 3000 ? content.slice(-3000) + '\n\n... (截断显示)' : content;
+  } catch (err) {
+    preview.textContent = '❌ 读取失败: ' + (err.message || err);
+  }
+}
+
+// ─── Prompt Templates ───
+async function refreshPrompts() {
+  const select = document.getElementById('prompt-select');
+
+  try {
+    const data = await AstrBotPluginPage.apiGet('/diary/prompts');
+    const prompts = data?.prompts || [];
+
+    promptsCache = {};
+
+    select.innerHTML = '<option value="">— 请选择模板 —</option>';
+
+    if (prompts.length === 0) {
+      select.innerHTML = '<option value="">— 暂无模板，请先在 prompts/ 目录添加 —</option>';
+      return;
+    }
+
+    for (const p of prompts) {
+      const opt = document.createElement('option');
+      opt.value = p.path;
+      opt.textContent = `${p.name}${p.is_default ? ' ⭐' : ''}`;
+      promptsCache[p.path] = p;
+      select.appendChild(opt);
+    }
+  } catch (err) {
+    console.error('Failed to load prompts:', err);
+    select.innerHTML = '<option value="">❌ 加载失败</option>';
+  }
+}
+
+async function onPromptSelect() {
+  const select = document.getElementById('prompt-select');
+  const preview = document.getElementById('prompt-preview');
+  const path = select.value;
+
+  if (!path) {
+    preview.classList.remove('visible');
+    preview.textContent = '';
+    return;
+  }
+
+  preview.classList.add('visible');
+
+  const p = promptsCache[path];
+  preview.textContent = p?.content || '(空)';
+}
+
+// ─── Providers ───
+let providersCache = { sources: [], models: [] };
+
+async function refreshProviders() {
+  const select = document.getElementById('provider-select');
+  select.innerHTML = '<option value="">⏳ 加载中...</option>';
+  select.disabled = true;
+
+  try {
+    const data = await AstrBotPluginPage.apiGet('/diary/providers');
+    const providers = data?.providers || [];
+    providersCache = providers;
+
+    select.innerHTML = '<option value="">— 请选择 AI 提供商 —</option>';
+
+    if (providers.length === 0) {
+      select.innerHTML = '<option value="">— 暂无配置，请在 api/ 下添加 .json 文件 —</option>';
+      select.disabled = false;
+      return;
+    }
+
+    for (const p of providers) {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      const modelCount = p.models?.length || 0;
+      opt.textContent = `${p.name} 🔑 ${p.key_preview} (${modelCount}个模型)`;
+      select.appendChild(opt);
+    }
+  } catch (err) {
+    select.innerHTML = '<option value="">❌ 读取失败: ' + (err.message || err) + '</option>';
+  }
+  select.disabled = false;
+}
+
+function onProviderSelect() {
+  const select = document.getElementById('provider-select');
+  const detail = document.getElementById('provider-detail');
+  const apiBaseInput = document.getElementById('api-base-input');
+  const apiKeyInput = document.getElementById('api-key-input');
+  const modelSelect = document.getElementById('model-select');
+  const id = select.value;
+
+  if (!id) {
+    detail.style.display = 'none';
+    return;
+  }
+
+  const provider = providersCache.find(p => p.id === id);
+  if (!provider) {
+    detail.style.display = 'none';
+    return;
+  }
+
+  detail.style.display = 'block';
+  apiBaseInput.value = provider.api_base || '';
+  apiKeyInput.value = provider.api_key || '';
+  apiKeyInput.readOnly = false;
+  apiKeyInput.placeholder = 'API Key';
+
+  // Fill models
+  modelSelect.innerHTML = '<option value="">— 选择模型 —</option>';
+  const models = provider.models || [];
+  if (models.length === 0) {
+    modelSelect.innerHTML += '<option value="custom">✏️ 手动输入模型名</option>';
+  } else {
+    for (const m of models) {
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = m;
+      modelSelect.appendChild(opt);
+    }
+    modelSelect.innerHTML += '<option value="custom">✏️ 手动输入...</option>';
+  }
+}
+
+// ─── Generate ───
+async function generateDiary() {
+  const logPath = document.getElementById('log-select').value;
+  const promptPath = document.getElementById('prompt-select').value;
+  const dateStr = document.getElementById('date-input').value.trim();
+  const providerId = document.getElementById('provider-select').value;
+  const apiBase = document.getElementById('api-base-input').value.trim();
+  const apiKey = document.getElementById('api-key-input').value.trim();
+  const modelSelect = document.getElementById('model-select');
+  let modelName = modelSelect.value;
+
+  // Handle custom model input
+  if (modelName === 'custom') {
+    modelName = prompt('请输入模型名称：');
+    if (!modelName) { showStatus('请选择或输入模型名称', 'error'); return; }
+  }
+
+  // Validation
+  if (!logPath) { showStatus('请先选择日志文件', 'error'); return; }
+  if (!promptPath) { showStatus('请先选择提示词模板', 'error'); return; }
+  if (!providerId) { showStatus('请先选择 AI 提供商', 'error'); return; }
+  if (!apiBase) { showStatus('缺少 API 地址', 'error'); return; }
+  if (!apiKey) { showStatus('请输入 API Key', 'error'); return; }
+  if (!modelName) { showStatus('请选择 AI 模型', 'error'); return; }
+  if (!dateStr) { showStatus('请输入日记日期', 'error'); return; }
+
+  const btn = document.getElementById('generate-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ 生成中...';
+
+  showStatus('正在读取日志并处理...', 'loading');
+
+  try {
+    showStatus('正在调用 AI 生成日记...', 'loading');
+
+    const result = await AstrBotPluginPage.apiPost('/diary/generate', {
+      log_path: logPath,
+      prompt_path: promptPath,
+      date: dateStr,
+      provider_id: providerId,
+      model: modelName,
+      api_base: apiBase,
+      api_key: apiKey
+    });
+
+    if (result?.error) {
+      showStatus('生成失败: ' + result.error, 'error');
+      return;
+    }
+
+    showStatus('✅ 日记生成成功！', 'success');
+
+    // Show result
+    const resultBox = document.getElementById('result-box');
+    const resultContent = document.getElementById('result-content');
+    resultContent.textContent = result.content || '(内容为空)';
+    resultBox.classList.add('visible');
+
+    // Scroll to result
+    resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Save last used selections
+    AstrBotPluginPage.apiPost('/diary/last_used', {
+      prompt_path: promptPath,
+      provider_id: providerId,
+      model: modelName,
+      api_base: apiBase,
+      api_key: apiKey
+    }).catch(() => {});
+
+  } catch (err) {
+    showStatus('生成失败: ' + (err.message || err), 'error');
+    console.error('Generate error:', err);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✨ 开始生成';
+}
+
+function showStatus(text, type) {
+  const bar = document.getElementById('status-bar');
+  const textEl = document.getElementById('status-text');
+  const spinner = document.getElementById('status-spinner');
+
+  bar.className = 'status-bar';
+  textEl.textContent = text;
+
+  if (type === 'loading') {
+    bar.classList.add('loading');
+    spinner.style.display = 'inline-block';
+  } else if (type === 'success') {
+    bar.classList.add('success');
+    spinner.style.display = 'none';
+  } else if (type === 'error') {
+    bar.classList.add('error');
+    spinner.style.display = 'none';
+  } else {
+    bar.classList.add('idle');
+  }
+}
+
+function copyResult() {
+  const content = document.getElementById('result-content').textContent;
+  navigator.clipboard.writeText(content).then(() => {
+    const btn = document.querySelector('.result-actions .btn:first-child');
+    const orig = btn.textContent;
+    btn.textContent = '✅ 已复制';
+    setTimeout(() => btn.textContent = orig, 2000);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = content;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+function downloadResult() {
+  const content = document.getElementById('result-content').textContent;
+  const dateStr = document.getElementById('date-input').value.trim() || 'unknown';
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `2026.${dateStr}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

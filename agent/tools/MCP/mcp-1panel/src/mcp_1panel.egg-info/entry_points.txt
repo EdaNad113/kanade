@@ -1,0 +1,2 @@
+[console_scripts]
+mcp-1panel = mcp_1panel:main
