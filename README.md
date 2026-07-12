@@ -5,26 +5,29 @@
 ## 目录结构
 
 ```
-agent/
-└── tools/
-    ├── MCP/                  # MCP Server 工具
-    │   ├── docs/             # 1Panel API 开发文档（swagger + HTML）
-    │   ├── mcp-1panel/       # 1Panel 面板管理 MCP Server（Python 版, v0.2.0）
-    │   └── npm/
-    │       └── mcp-1panel/   # 1Panel 面板管理 MCP Server（Node.js 版, v0.1.0）
-    ├── skills/               # Hermes Agent Skill 文件
-    │   ├── qiuzhi-skill-creator/
-    │   └── skill 模板/
-    │
-    └── 插件/                 # AstrBot 适配插件
-        └── conversation_logs/   # 对话记录器 v2.6
+kanade/
+└── agent/
+    └── tools/
+        ├── MCP/                  # MCP Server 工具
+        │   ├── docs/             # 1Panel API 开发文档（swagger + HTML）
+        │   ├── mcp-1panel/       # 1Panel 面板管理 MCP Server（Python 版）
+        │   └── npm/
+        │       └── mcp-1panel/   # 1Panel 面板管理 MCP Server（Node.js 版）
+        ├── skills/               # Hermes Agent Skill 文件
+        │   ├── qiuzhi-skill-creator/
+        │   └── skill 模板/
+        │
+        └── 插件/                 # AstrBot 适配插件
+            └── conversation_logs/   # 对话记录器
 ```
+
+## 组件一览
 
 | 组件 | 版本 | 语言 | 说明 |
 |------|------|------|------|
 | `mcp-1panel` (Python) | **v0.2.0** | Python | 199 工具 / 18 资源 / 16 领域模块 |
-| `mcp-1panel` (Node.js) | v0.1.0 | Node.js | 199 工具 / 18 资源 / 18 模块 |
-| `conversation_logger` | v2.6.0 | Python | AstrBot 对话记录插件 |
+| `mcp-1panel` (Node.js) | **v0.1.0** | Node.js | 199 工具 / 18 资源 / 18 模块，@kanade/mcp-1panel |
+| `conversation_logger` | **v2.6.0** | Python | AstrBot 对话记录插件 |
 
 ### mcp-1panel（Python 版）v0.2.0
 
@@ -41,20 +44,22 @@ agent/
 - 199 个 MCP 工具 + 18 个 `panel://` 资源（映射复用工具 handler）
 - npm package `@kanade/mcp-1panel`
 - 支持 stdio / SSE 双传输协议
-- `api-proxy.js` 使用 Proxy 实现惰性初始化，错误不缓存（环境变量修复后即刻生效）
+- `api-proxy.js` 使用 Proxy 实现惰性初始化，错误不缓存（环境变量变化后即刻生效）
 - `toolWithParams` 只标记无默认值的参数为 required
 - 测试覆盖：12 个用例，无需 1Panel 环境即可运行
 
 ### skills/
 
 Hermes Agent 的 Skill 定义（`.md` + 配套脚本/引用文件）：
+
 - `qiuzhi-skill-creator/` — 个人 Skill 创建工具箱
 - `skill 模板/` — 新建 Skill 的起点模板
 
 ### 插件/
 
 基于 AstrBot Star API 开发的插件（Python），适用于 AstrBot >= 4.0.0：
-- `conversation_logs/` — 对话记录器，全量捕获对话日志，附带日记生成 WebUI
+
+- `conversation_logs/` — 对话记录器 v2.6，全量捕获对话日志，附带日记生成 WebUI
 
 ## 版本管理约定
 
