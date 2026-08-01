@@ -593,12 +593,6 @@ npm publish --access public
 
 - **README 重构**：精简冗余内容（移除 npm 包名/scope 说明），整合「快速开始 / 客户端配置 / 1Panel 内置 MCP 管理」，新增「特性」与「常见问题」
 
-### v0.1.0
-
-- **api-proxy.js**：初始化失败不再永久缓存错误 — 环境变量修复后即刻生效，无需重启
-- **helpers.js**：`toolWithParams` 仅将有默认值的参数标记为可选，`required` 数组只含无 `default` 的参数
-- **panel-client.test.js**：新增 12 个测试用例，覆盖认证、HTTP 调用、错误处理
-
 ---
 
 ## 与 Python 版的区别
