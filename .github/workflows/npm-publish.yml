@@ -44,6 +44,10 @@ jobs:
           cache: npm
           cache-dependency-path: agent/tools/MCP/npm/mcp-1panel/package-lock.json
       - run: npm ci
-      - run: npm publish --access public
+      - name: Publish to npm
+        run: |
+          # 预发布 Release 用 beta tag，正式 Release 才更新 latest
+          TAG="${{ github.event.release.prerelease && 'beta' || 'latest' }}"
+          npm publish --access public --tag "$TAG"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
