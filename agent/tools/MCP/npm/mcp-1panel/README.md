@@ -2,6 +2,8 @@
 
 > **MCP Server for 1Panel** — 通过 MCP 协议查询 1Panel 服务器状态（只读）。
 
+> **npm 包名**：\@edanad113/mcp-1panel\（\@kanade\ scope 已被他人注册，因此使用个人 scope）。
+
 基于原始 [Python 版](https://github.com/EdaNad113/kanade/tree/main/agent/tools/MCP/mcp-1panel) 的 Node.js 移植版。  
 设计用于 **1Panel 内置 MCP 管理**，也支持任何 MCP 客户端（Cursor、Claude Desktop、Windsurf 等）。
 
@@ -46,7 +48,7 @@ PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key mcp-1panel
 ### 方式三：npx（需先发布到 npm）
 
 ```bash
-PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key npx @kanade/mcp-1panel
+PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key npx @edanad113/mcp-1panel
 ```
 
 ---
@@ -95,7 +97,7 @@ PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key npx @kanade/mcp-1pan
 |------|-----|
 | 名称 | `mcp-1panel` |
 | 类型 | `npx` 或 `node` |
-| 启动命令 | `npx -y @kanade/mcp-1panel` 或 `node /opt/1panel/mcp/mcp-1panel/src/index.js` |
+| 启动命令 | `npx -y @edanad113/mcp-1panel` 或 `node /opt/1panel/mcp/mcp-1panel/src/index.js` |
 | 环境变量 | `PANEL_HOST=http://localhost:8080` + `PANEL_API_KEY=...` |
 | 端口 | `10002` |
 

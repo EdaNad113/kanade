@@ -1,10 +1,10 @@
 {
-  "name": "@kanade/mcp-1panel",
+  "name": "@edanad113/mcp-1panel",
   "version": "0.1.0",
   "description": "MCP Server for 1Panel - query your 1Panel server status through MCP protocol",
   "type": "module",
   "bin": {
-    "mcp-1panel": "./src/index.js"
+    "mcp-1panel": "src/index.js"
   },
   "files": [
     "src/"
@@ -18,7 +18,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/EdaNad113/kanade.git",
+    "url": "git+https://github.com/EdaNad113/kanade.git",
     "directory": "agent/tools/MCP/npm/mcp-1panel"
   },
   "scripts": {
