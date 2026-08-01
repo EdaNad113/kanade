@@ -109,11 +109,13 @@ npm install -g @edanad113/mcp-1panel
 
 ### SSE 模式（远程）
 
+适用于 1Panel 等已部署好的远程 MCP Server。`url` 以 1Panel 实例「配置」按钮生成的地址为准（外部访问路径 + 端口 + SSE 路径），例如：
+
 ```json
 {
   "mcpServers": {
     "mcp-1panel": {
-      "url": "http://your-server:10002/mcp-1panel",
+      "url": "http://your-server:10002/sse",
       "transport": "sse"
     }
   }
@@ -124,17 +126,71 @@ npm install -g @edanad113/mcp-1panel
 
 ## 1Panel MCP Server 配置
 
-在 1Panel → AI → MCP 中创建：
+1Panel 会通过 npx/uvx 启动 stdio MCP Server，封装进容器，并用 Supergateway 桥接为 SSE / Streamable HTTP 服务。在 **1Panel → AI → MCP** 中创建，以下两种方式任选。
+
+### 方式一：npx 直连（服务器可访问 npm registry 时）
 
 | 字段 | 值 |
 |------|-----|
 | 名称 | `mcp-1panel` |
-| 类型 | `npx` 或 `node` |
-| 启动命令 | `npx -y @edanad113/mcp-1panel` 或 `node /opt/1panel/mcp/mcp-1panel/src/index.js` |
-| 环境变量 | `PANEL_HOST=http://localhost:8080` + `PANEL_API_KEY=...` |
-| 端口 | `10002` |
+| 类型 | `npx` |
+| 运行命令 | `npx -y @edanad113/mcp-1panel` |
+| 输出类型 | `sse`（或 `streamableHttp`） |
+| 环境变量 | `PANEL_HOST=http://localhost:8080`、`PANEL_API_KEY=<你的 1Panel API 密钥>` |
+| 端口 | 如 `10002`，按需开启外部访问 |
 
-> ⚠️ 部署为 node 类型时，需要手动在 docker-compose.yml 中添加 `volumes` 挂载源码目录。
+> 🇨🇳 国内服务器直连 npm registry 经常超时导致无法启动。可改用国内镜像源：
+> - 运行命令：`npx -y --registry=https://registry.npmmirror.com @edanad113/mcp-1panel`
+> - 或在「环境变量」中添加：`npm_config_registry=https://registry.npmmirror.com`
+
+### 方式二：本地源码 + node 命令（推荐，离线/内网稳定）
+
+先在服务器上部署源码（容器内不再需要联网下载）：
+
+```bash
+cd /opt/1panel/mcp
+git clone https://github.com/EdaNad113/kanade.git
+cd kanade/agent/tools/MCP/npm/mcp-1panel
+npm install --omit=dev
+cp -r . /opt/1panel/mcp/mcp-1panel   # 把可运行目录放到固定路径
+```
+
+然后在 1Panel 中创建：
+
+| 字段 | 值 |
+|------|-----|
+| 名称 | `mcp-1panel` |
+| 类型 | `npx`（支持二进制启动命令） |
+| 运行命令 | `node /opt/1panel/mcp/mcp-1panel/src/index.js` |
+| 输出类型 | `sse` |
+| 环境变量 | `PANEL_HOST=http://localhost:8080`、`PANEL_API_KEY=<你的 1Panel API 密钥>` |
+| 挂载 | 源 `/opt/1panel/mcp/mcp-1panel` → 目标 `/opt/1panel/mcp/mcp-1panel` |
+| 端口 | 如 `10002`，按需开启外部访问 |
+
+> ⚠️ 关键：1Panel 的 MCP 实例运行在容器里，**必须通过「挂载」把宿主机源码目录映射进容器**，运行命令里的路径才能访问到源码和 `node_modules`。
+
+### 直接粘贴 JSON（1Panel 支持「导入 MCP Server 配置」）
+
+```json
+{
+  "mcpServers": {
+    "mcp-1panel": {
+      "command": "npx",
+      "args": ["-y", "@edanad113/mcp-1panel"],
+      "env": {
+        "PANEL_HOST": "http://localhost:8080",
+        "PANEL_API_KEY": "<your API key>"
+      }
+    }
+  }
+}
+```
+
+### 客户端连接
+
+部署成功后，点击实例的「配置」按钮获取客户端连接信息（外部访问路径 + 端口 + SSE/流式路径），例如 `http://your-server:10002/sse`，粘贴到 Cursor、Claude Desktop 等 MCP 客户端即可使用。
+
+> ⚠️ 实例无法启动时，按顺序检查：容器日志（npx 是否下载成功）、Node 版本（需 ≥ 18）、挂载路径、端口监听、防火墙。
 
 ---
 
