@@ -160,15 +160,13 @@ mcp-1panel/
 │       └── websites.py         # 25 个网站工具
 ├── tests/
 │   └── test_panel_client.py    # PanelClient 测试（14 个用例）
-├── docs/
-│   ├── INDEX.md                # 开发文档索引
-│   ├── api-manual.html         # 1Panel 官方 API 文档
-│   └── api-swagger.json        # 完整 Swagger（603 端点）
 ├── README.md
 ├── LICENSE
 ├── .gitignore
 └── .env.example
 ```
+
+> 1Panel API 开发文档（`INDEX.md` / `api-manual.html` / `api-swagger.json`）位于同级目录 `agent/tools/MCP/docs/`。
 
 ## 许可
 

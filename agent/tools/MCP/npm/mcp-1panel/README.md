@@ -105,7 +105,7 @@ PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key npx @kanade/mcp-1pan
 
 ## 工具列表
 
-> **共 199 个工具**，覆盖 18 个模块。所有工具均为**只读查询**，不会修改任何 1Panel 配置。
+> **共 199 个工具**，覆盖 16 个领域模块。所有工具均为**只读查询**，不会修改任何 1Panel 配置。
 
 ### 🤖 AI（18 个）
 
@@ -514,7 +514,7 @@ npm publish --access public
 
 ---
 
-## v0.2.0 更新
+## v0.1.0 更新
 
 - **api-proxy.js**：初始化失败不再永久缓存错误 — 环境变量修复后即刻生效，无需重启
 - **helpers.js**：`toolWithParams` 仅将有默认值的参数标记为可选，`required` 数组只含无 `default` 的参数
@@ -527,12 +527,12 @@ npm publish --access public
 | 特性 | Python 版 | npm 版 |
 |------|-----------|--------|
 | 运行环境 | Python 3.10+ | Node.js 18+ |
-| 部署方式 | Docker 容器 | **npx**（1Panel 原生支持） |
+| 部署方式 | pip 安装 | **npx**（1Panel 原生支持） |
 | 依赖 | `mcp>=1.0.0`, `requests` | `@modelcontextprotocol/sdk` |
 | MCP 框架 | FastMCP | `@modelcontextprotocol/sdk` |
-| 工具数量 | 44 | **199** |
-| 资源数量 | 6 | **18** |
-| 架构 | 单文件 | **模块化（16 个模块文件）** |
+| 工具数量 | **199** | **199** |
+| 资源数量 | **18** | **18** |
+| 架构 | 模块化（16 个领域模块） | 模块化（16 个领域模块 + helpers） |
 
 ---
 

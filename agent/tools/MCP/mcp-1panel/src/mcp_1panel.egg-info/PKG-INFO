@@ -114,7 +114,7 @@ Token = md5("1panel" + API-Key + UnixTimestamp)
 
 ```
 mcp-1panel/
-├── pyproject.toml          # 包定义 v0.1.0
+├── pyproject.toml          # 包定义 v0.2.0
 ├── src/mcp_1panel/
 │   ├── __init__.py         # 导出 PanelClient + __version__
 │   ├── __main__.py         # 快捷入口

@@ -15,6 +15,8 @@ kanade/
         │       └── mcp-1panel/   # 1Panel 面板管理 MCP Server（Node.js 版）
         ├── skills/               # Hermes Agent Skill 文件
         │   ├── qiuzhi-skill-creator/
+        │   ├── 1panel-app-adapter-main/
+        │   ├── 1Panel-appstore-skills-main/
         │   └── skill 模板/
         │
         └── 插件/                 # AstrBot 适配插件
@@ -26,7 +28,7 @@ kanade/
 | 组件 | 版本 | 语言 | 说明 |
 |------|------|------|------|
 | `mcp-1panel` (Python) | **v0.2.0** | Python | 199 工具 / 18 资源 / 16 领域模块 |
-| `mcp-1panel` (Node.js) | **v0.1.0** | Node.js | 199 工具 / 18 资源 / 18 模块，@kanade/mcp-1panel |
+| `mcp-1panel` (Node.js) | **v0.1.0** | Node.js | 199 工具 / 18 资源 / 16 领域模块，@kanade/mcp-1panel |
 | `conversation_logger` | **v2.6.0** | Python | AstrBot 对话记录插件 |
 
 ### mcp-1panel（Python 版）v0.2.0
@@ -53,6 +55,8 @@ kanade/
 Hermes Agent 的 Skill 定义（`.md` + 配套脚本/引用文件）：
 
 - `qiuzhi-skill-creator/` — 个人 Skill 创建工具箱
+- `1panel-app-adapter-main/` — 1Panel 应用适配（app 工件生成/迁移/校验）
+- `1Panel-appstore-skills-main/` — 1Panel 应用商店打包
 - `skill 模板/` — 新建 Skill 的起点模板
 
 ### 插件/
@@ -64,6 +68,6 @@ Hermes Agent 的 Skill 定义（`.md` + 配套脚本/引用文件）：
 ## 版本管理约定
 
 - `mcp-1panel` 双版本保持**功能同步**，版本号各自独立管理
-- 功能模块按 `agent/tools/MCP/mcp-1panel/tools/` 下模块划分
+- 功能模块按 `agent/tools/MCP/mcp-1panel/src/mcp_1panel/tools/` 下模块划分
 - 新增工具后同步更新 README 和版本号
 - 双版本改动需同步更新对应的测试文件
