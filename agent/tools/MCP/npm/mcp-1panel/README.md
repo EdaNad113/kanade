@@ -2,22 +2,27 @@
 
 > **MCP Server for 1Panel** — 通过 MCP 协议查询 1Panel 服务器状态（只读）。
 
-> **npm 包名**：\@edanad113/mcp-1panel\（\@kanade\ scope 已被他人注册，因此使用个人 scope）。
+基于 [Python 版](https://github.com/EdaNad113/kanade/tree/main/agent/tools/MCP/mcp-1panel) 的 Node.js 移植版，适用于 1Panel 内置 MCP 管理，也兼容 Cursor、Claude Desktop、Windsurf、Hermes 等任意 MCP 客户端。
 
-基于原始 [Python 版](https://github.com/EdaNad113/kanade/tree/main/agent/tools/MCP/mcp-1panel) 的 Node.js 移植版。  
-设计用于 **1Panel 内置 MCP 管理**，也支持任何 MCP 客户端（Cursor、Claude Desktop、Windsurf 等）。
+## 特性
+
+- **199 个只读工具 + 18 个 `panel://` 资源**，覆盖 16 个领域模块
+- **零配置认证**：环境变量 `PANEL_HOST` + `PANEL_API_KEY`（支持 `PANEL_ACCESS_TOKEN` 别名）
+- **惰性初始化**：环境变量修改后即刻生效，无需重启，错误不缓存
+- **部署灵活**：npx / npm 全局 / 本地源码 / 1Panel 内置 MCP 管理
 
 ---
 
 ## 目录
 
 - [快速开始](#快速开始)
-- [客户端连接配置](#客户端连接配置)
-- [1Panel MCP Server 配置](#1panel-mcp-server-配置)
+- [客户端配置](#客户端配置)
+- [1Panel 内置 MCP 管理](#1panel-内置-mcp-管理)
 - [工具列表](#工具列表)
 - [资源列表](#资源列表)
 - [环境变量](#环境变量)
 - [项目结构](#项目结构)
+- [测试](#测试)
 - [开发](#开发)
 - [更新日志](#更新日志)
 - [与 Python 版的区别](#与-python-版的区别)
@@ -26,91 +31,39 @@
 
 ## 快速开始
 
-### 前置条件
+前置条件：1Panel 面板 v2.x，并在「面板设置 → API 接口」开启接口、创建 API 密钥。
 
-- 1Panel 面板 v2.x
-- 1Panel API 密钥（面板设置 → API 接口 → 创建密钥）
-
-### 方式一：本地运行
+### 方式一：npx（免安装，推荐）
 
 ```bash
-cd agent/tools/MCP/npm/mcp-1panel
+PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key npx -y @edanad113/mcp-1panel
+```
+
+### 方式二：npm 全局安装
+
+```bash
+npm install -g @edanad113/mcp-1panel
+PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key mcp-1panel
+```
+
+### 方式三：本地运行（开发调试）
+
+```bash
+git clone https://github.com/EdaNad113/kanade.git
+cd kanade/agent/tools/MCP/npm/mcp-1panel
+npm install
 PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key node src/index.js
 ```
 
-### 方式二：npm link（全局注册）
-
-```bash
-npm install
-npm link
-PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key mcp-1panel
-```
-
-### 方式三：npx（无需安装，直接运行）
-
-```bash
-PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key npx @edanad113/mcp-1panel
-```
-
-### 方式四：npm 全局安装
-
-```bash
-npm install -g @edanad113/mcp-1panel
-PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key mcp-1panel
-```
+启动成功后输出 `[mcp-1panel] Running on stdio (199 tools, 18 resources)`。
 
 ---
 
-## 客户端连接配置
+## 客户端配置
 
-### stdio 模式（本地）
+### stdio（本机客户端）
 
-```json
-{
-  "mcpServers": {
-    "mcp-1panel": {
-      "command": "node",
-      "args": ["/opt/1panel/mcp/mcp-1panel/src/index.js"],
-      "env": {
-        "PANEL_HOST": "http://localhost:8080",
-        "PANEL_API_KEY": "<your API key>"
-      }
-    }
-  }
-}
-```
-
-> 环境变量支持 `PANEL_API_KEY` 或 `PANEL_ACCESS_TOKEN` 两种写法。
-
-### stdio 模式（npm 全局安装）
-
-先全局安装：
-
-```bash
-npm install -g @edanad113/mcp-1panel
-```
-
-然后在 MCP 客户端中配置：
-
-```json
-{
-  "mcpServers": {
-    "mcp-1panel": {
-      "command": "mcp-1panel",
-      "env": {
-        "PANEL_HOST": "http://localhost:8080",
-        "PANEL_API_KEY": "<your API key>"
-      }
-    }
-  }
-}
-```
-
-> 不想全局安装时，也可以使用 npx（见下方「npx 模式」）。
-
-### npx 模式（免安装，无需全局安装）
-
-不需要 `npm install -g`，也不需要克隆源码，`npx` 会自动从 npm registry 拉取并运行最新版 `@edanad113/mcp-1panel`：
+Claude Desktop、Cursor、Windsurf、Hermes 等本机客户端通过 stdio 直接拉起：
 
 ```json
 {
@@ -119,7 +72,7 @@ npm install -g @edanad113/mcp-1panel
       "command": "npx",
       "args": ["-y", "@edanad113/mcp-1panel"],
       "env": {
-        "PANEL_HOST": "<容器内可达的面板地址，见上方⚠️>",
+        "PANEL_HOST": "http://localhost:8080",
         "PANEL_API_KEY": "<你的1Panel API密钥>"
       }
     }
@@ -127,17 +80,19 @@ npm install -g @edanad113/mcp-1panel
 }
 ```
 
-> 🇨🇳 国内网络直连 npm registry 拉取超时导致无法启动时，可在 `env` 中加入 `"npm_config_registry": "https://registry.npmmirror.com"` 使用国内镜像源。
+> - 已全局安装时可简写为 `"command": "mcp-1panel"`
+> - Windows 下报 `[WinError 2] 系统找不到指定的文件` 时，把 `command` 写成 Node 的完整路径（如 `C:\Program Files\nodejs\npx.cmd`），或改用 `node` + 本地 `src/index.js` 路径
+> - 国内网络拉取 npm registry 超时时，可在 `env` 中加入 `"npm_config_registry": "https://registry.npmmirror.com"`
 
-### SSE 模式（远程）
+### SSE / Streamable HTTP（远程）
 
-适用于 1Panel 等已部署好的远程 MCP Server。`url` 以 1Panel 实例「配置」按钮生成的地址为准（外部访问路径 + 端口 + SSE 路径），例如：
+1Panel 会把 stdio 实例桥接为 SSE，客户端直接使用 1Panel 页面「配置」按钮给出的地址（外部访问路径 + 端口 + SSE 路径）：
 
 ```json
 {
   "mcpServers": {
     "mcp-1panel": {
-      "url": "http://your-server:10002/sse",
+      "url": "http://your-server:10002/mcp-1panel",
       "transport": "sse"
     }
   }
@@ -146,27 +101,9 @@ npm install -g @edanad113/mcp-1panel
 
 ---
 
-## 1Panel MCP Server 配置
+## 1Panel 内置 MCP 管理
 
-1Panel 会通过 npx/uvx 启动 stdio MCP Server，封装进容器，并用 Supergateway 桥接为 SSE / Streamable HTTP 服务。在 **1Panel → AI → MCP** 中创建，以下两种方式任选。
-
-> ⚠️ **Supergateway 镜像**：1Panel 创建 MCP 实例时需要拉取桥接镜像 `supercorp/supergateway`。国内服务器直连 Docker Hub 经常拉取失败，导致实例创建/启动报错（如「add proxy failed」、容器起不来）。可先在服务器上手动拉取（或配置镜像加速）：
->
-> ```bash
-> docker pull supercorp/supergateway
-> ```
->
-> 拉取成功后回到 1Panel 重新创建/启动实例即可。
-
-> ⚠️ **`PANEL_HOST` 不能填 `localhost`**：MCP 实例运行在容器里，容器内的 `localhost` 指向容器自己，访问不到宿主机上的 1Panel，调用工具会报 `ERR: fetch failed`。请填写从容器内可达的面板地址：
->
-> - 面板直接跑在宿主机上：`http://172.17.0.1:<面板端口>`（Docker 默认网关）或 `http://host.docker.internal:<面板端口>`
-> - 面板本身也在容器里：填写面板容器的 IP 或同 Docker 网络内的地址
-> - 有内网/公网可达地址时可直接填写，如 `http://<服务器IP>:<面板端口>`
->
-> `PANEL_API_KEY` 为「面板设置 → API 接口 → 创建密钥」生成的密钥，不是登录密码。
-
-### 方式一：npx 直连（服务器可访问 npm registry 时）
+1Panel 通过 npx/uvx 启动 stdio MCP Server，封装进容器，并用 Supergateway 桥接为 SSE / Streamable HTTP 服务。在 **1Panel → AI → MCP** 中创建：
 
 | 字段 | 值 |
 |------|-----|
@@ -174,61 +111,36 @@ npm install -g @edanad113/mcp-1panel
 | 类型 | `npx` |
 | 运行命令 | `npx -y @edanad113/mcp-1panel` |
 | 输出类型 | `sse`（或 `streamableHttp`） |
-| 环境变量 | `PANEL_HOST=<容器内可达的面板地址，见上方⚠️>`、`PANEL_API_KEY=<你的 1Panel API 密钥>` |
+| 环境变量 | `PANEL_HOST=<容器内可达的面板地址>`、`PANEL_API_KEY=<你的 1Panel API 密钥>` |
 | 端口 | 如 `10002`，按需开启外部访问 |
+
+离线/内网环境可改用本地源码 + node 命令：把仓库 `agent/tools/MCP/npm/mcp-1panel` 部署到服务器（`npm install --omit=dev`），运行命令填 `node /opt/1panel/mcp/mcp-1panel/src/index.js`，并通过「挂载」把该目录映射进容器。
 
 > 🇨🇳 国内服务器直连 npm registry 经常超时导致无法启动。可改用国内镜像源：
 > - 运行命令：`npx -y --registry=https://registry.npmmirror.com @edanad113/mcp-1panel`
 > - 或在「环境变量」中添加：`npm_config_registry=https://registry.npmmirror.com`
 
-### 方式二：本地源码 + node 命令（推荐，离线/内网稳定）
+### 常见问题
 
-先在服务器上部署源码（容器内不再需要联网下载）：
+**Supergateway 镜像拉取失败**
+
+1Panel 创建实例时需要拉取桥接镜像 `supercorp/supergateway`，国内服务器直连 Docker Hub 经常失败，导致实例创建/启动报错（如「add proxy failed」、容器起不来）。先手动拉取（或配置镜像加速）：
 
 ```bash
-cd /opt/1panel/mcp
-git clone https://github.com/EdaNad113/kanade.git
-cd kanade/agent/tools/MCP/npm/mcp-1panel
-npm install --omit=dev
-cp -r . /opt/1panel/mcp/mcp-1panel   # 把可运行目录放到固定路径
+docker pull supercorp/supergateway
 ```
 
-然后在 1Panel 中创建：
+拉取成功后回到 1Panel 重新创建/启动实例即可。
 
-| 字段 | 值 |
-|------|-----|
-| 名称 | `mcp-1panel` |
-| 类型 | `npx`（支持二进制启动命令） |
-| 运行命令 | `node /opt/1panel/mcp/mcp-1panel/src/index.js` |
-| 输出类型 | `sse` |
-| 环境变量 | `PANEL_HOST=<容器内可达的面板地址，见上方⚠️>`、`PANEL_API_KEY=<你的 1Panel API 密钥>` |
-| 挂载 | 源 `/opt/1panel/mcp/mcp-1panel` → 目标 `/opt/1panel/mcp/mcp-1panel` |
-| 端口 | 如 `10002`，按需开启外部访问 |
+**`PANEL_HOST` 不能填 `localhost`**
 
-> ⚠️ 关键：1Panel 的 MCP 实例运行在容器里，**必须通过「挂载」把宿主机源码目录映射进容器**，运行命令里的路径才能访问到源码和 `node_modules`。
+MCP 实例运行在容器里，容器内的 `localhost` 指向容器自己，访问不到宿主机上的 1Panel，调用工具会报 `ERR: fetch failed`。请填写从容器内可达的面板地址：
 
-### 直接粘贴 JSON（1Panel 支持「导入 MCP Server 配置」）
+- 面板直接跑在宿主机上：`http://172.17.0.1:<面板端口>`（Docker 默认网关）或 `http://host.docker.internal:<面板端口>`
+- 面板本身也在容器里：填写面板容器的 IP 或同 Docker 网络内的地址
+- 有内网/公网可达地址时可直接填写，如 `http://<服务器IP>:<面板端口>`
 
-```json
-{
-  "mcpServers": {
-    "mcp-1panel": {
-      "command": "npx",
-      "args": ["-y", "@edanad113/mcp-1panel"],
-      "env": {
-        "PANEL_HOST": "<容器内可达的面板地址，见上方⚠️>",
-        "PANEL_API_KEY": "<your API key>"
-      }
-    }
-  }
-}
-```
-
-### 客户端连接
-
-部署成功后，点击实例的「配置」按钮获取客户端连接信息（外部访问路径 + 端口 + SSE/流式路径），例如 `http://your-server:10002/sse`，粘贴到 Cursor、Claude Desktop 等 MCP 客户端即可使用。
-
-> ⚠️ 实例无法启动时，按顺序检查：容器日志（npx 是否下载成功）、Node 版本（需 ≥ 18）、挂载路径、端口监听、防火墙。
+`PANEL_API_KEY` 为「面板设置 → API 接口 → 创建密钥」生成的密钥，不是登录密码。
 
 ---
 
@@ -320,7 +232,7 @@ cp -r . /opt/1panel/mcp/mcp-1panel   # 把可运行目录放到固定路径
 | 工具 | 说明 | 参数 |
 |------|------|------|
 | `panel_settings` | 面板基础设置 | — |
-| `panel_setting_by_key` | 按 Key 查询设置 | `key` |
+| `panel_logs` | 操作日志 | `rows` |
 | `panel_setting_by_key_post` | 按 Key 查询设置(POST) | `key` |
 | `panel_login_setting` | 登录认证设置 | — |
 | `panel_commands_tree` | 命令树 | — |
@@ -422,11 +334,10 @@ cp -r . /opt/1panel/mcp/mcp-1panel   # 把可运行目录放到固定路径
 | `panel_tool_config` | 工具配置 | `name` |
 | `panel_supervisor_processes` | Supervisor 进程列表 | — |
 
-### 📋 日志（5 个）
+### 📋 日志（4 个）
 
 | 工具 | 说明 | 参数 |
 |------|------|------|
-| `panel_logs` | 操作日志 | `rows` |
 | `panel_login_logs` | 登录日志 | `rows` |
 | `panel_system_log_files` | 系统日志文件 | — |
 | `panel_executing_tasks` | 执行中的任务数 | — |
@@ -442,13 +353,12 @@ cp -r . /opt/1panel/mcp/mcp-1panel   # 把可运行目录放到固定路径
 | `panel_openresty_https` | HTTPS 配置 | — |
 | `panel_openresty_scope` | 局部配置 | `scope` |
 
-### 🔄 进程（3 个）
+### 🔄 进程（2 个）
 
 | 工具 | 说明 | 参数 |
 |------|------|------|
 | `panel_process_listening` | 监听端口列表 | — |
 | `panel_process_info` | 进程详情 | `pid` |
-| `panel_processes` | 端口监听（容器） | — |
 
 ### 🏗️ 运行环境（12 个）
 
@@ -678,6 +588,10 @@ npm publish --access public
 ---
 
 ## 更新日志
+
+### v0.0.9（预发布）
+
+- **README 重构**：精简冗余内容（移除 npm 包名/scope 说明），整合「快速开始 / 客户端配置 / 1Panel 内置 MCP 管理」，新增「特性」与「常见问题」
 
 ### v0.1.3
 
