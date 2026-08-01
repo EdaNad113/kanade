@@ -45,10 +45,17 @@ npm link
 PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key mcp-1panel
 ```
 
-### 方式三：npx（需先发布到 npm）
+### 方式三：npx（无需安装，直接运行）
 
 ```bash
 PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key npx @edanad113/mcp-1panel
+```
+
+### 方式四：npm 全局安装
+
+```bash
+npm install -g @edanad113/mcp-1panel
+PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key mcp-1panel
 ```
 
 ---
@@ -73,6 +80,32 @@ PANEL_HOST=http://localhost:8080 PANEL_API_KEY=your_api_key npx @edanad113/mcp-1
 ```
 
 > 环境变量支持 `PANEL_API_KEY` 或 `PANEL_ACCESS_TOKEN` 两种写法。
+
+### stdio 模式（npm 全局安装）
+
+先全局安装：
+
+```bash
+npm install -g @edanad113/mcp-1panel
+```
+
+然后在 MCP 客户端中配置：
+
+```json
+{
+  "mcpServers": {
+    "mcp-1panel": {
+      "command": "mcp-1panel",
+      "env": {
+        "PANEL_HOST": "http://localhost:8080",
+        "PANEL_API_KEY": "<your API key>"
+      }
+    }
+  }
+}
+```
+
+> 不想全局安装时，也可以使用 npx：`"command": "npx"`、`"args": ["-y", "@edanad113/mcp-1panel"]`。
 
 ### SSE 模式（远程）
 
