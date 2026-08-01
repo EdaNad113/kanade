@@ -1,2 +1,5 @@
 node_modules/
 .env
+
+# npm pack 产物
+*.tgz

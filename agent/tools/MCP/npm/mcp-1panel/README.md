@@ -19,6 +19,7 @@
 - [环境变量](#环境变量)
 - [项目结构](#项目结构)
 - [开发](#开发)
+- [更新日志](#更新日志)
 - [与 Python 版的区别](#与-python-版的区别)
 
 ---
@@ -118,7 +119,7 @@ npm install -g @edanad113/mcp-1panel
       "command": "npx",
       "args": ["-y", "@edanad113/mcp-1panel"],
       "env": {
-        "PANEL_HOST": "http://localhost:8080",
+        "PANEL_HOST": "<容器内可达的面板地址，见上方⚠️>",
         "PANEL_API_KEY": "<你的1Panel API密钥>"
       }
     }
@@ -149,6 +150,22 @@ npm install -g @edanad113/mcp-1panel
 
 1Panel 会通过 npx/uvx 启动 stdio MCP Server，封装进容器，并用 Supergateway 桥接为 SSE / Streamable HTTP 服务。在 **1Panel → AI → MCP** 中创建，以下两种方式任选。
 
+> ⚠️ **Supergateway 镜像**：1Panel 创建 MCP 实例时需要拉取桥接镜像 `supercorp/supergateway`。国内服务器直连 Docker Hub 经常拉取失败，导致实例创建/启动报错（如「add proxy failed」、容器起不来）。可先在服务器上手动拉取（或配置镜像加速）：
+>
+> ```bash
+> docker pull supercorp/supergateway
+> ```
+>
+> 拉取成功后回到 1Panel 重新创建/启动实例即可。
+
+> ⚠️ **`PANEL_HOST` 不能填 `localhost`**：MCP 实例运行在容器里，容器内的 `localhost` 指向容器自己，访问不到宿主机上的 1Panel，调用工具会报 `ERR: fetch failed`。请填写从容器内可达的面板地址：
+>
+> - 面板直接跑在宿主机上：`http://172.17.0.1:<面板端口>`（Docker 默认网关）或 `http://host.docker.internal:<面板端口>`
+> - 面板本身也在容器里：填写面板容器的 IP 或同 Docker 网络内的地址
+> - 有内网/公网可达地址时可直接填写，如 `http://<服务器IP>:<面板端口>`
+>
+> `PANEL_API_KEY` 为「面板设置 → API 接口 → 创建密钥」生成的密钥，不是登录密码。
+
 ### 方式一：npx 直连（服务器可访问 npm registry 时）
 
 | 字段 | 值 |
@@ -157,7 +174,7 @@ npm install -g @edanad113/mcp-1panel
 | 类型 | `npx` |
 | 运行命令 | `npx -y @edanad113/mcp-1panel` |
 | 输出类型 | `sse`（或 `streamableHttp`） |
-| 环境变量 | `PANEL_HOST=http://localhost:8080`、`PANEL_API_KEY=<你的 1Panel API 密钥>` |
+| 环境变量 | `PANEL_HOST=<容器内可达的面板地址，见上方⚠️>`、`PANEL_API_KEY=<你的 1Panel API 密钥>` |
 | 端口 | 如 `10002`，按需开启外部访问 |
 
 > 🇨🇳 国内服务器直连 npm registry 经常超时导致无法启动。可改用国内镜像源：
@@ -184,7 +201,7 @@ cp -r . /opt/1panel/mcp/mcp-1panel   # 把可运行目录放到固定路径
 | 类型 | `npx`（支持二进制启动命令） |
 | 运行命令 | `node /opt/1panel/mcp/mcp-1panel/src/index.js` |
 | 输出类型 | `sse` |
-| 环境变量 | `PANEL_HOST=http://localhost:8080`、`PANEL_API_KEY=<你的 1Panel API 密钥>` |
+| 环境变量 | `PANEL_HOST=<容器内可达的面板地址，见上方⚠️>`、`PANEL_API_KEY=<你的 1Panel API 密钥>` |
 | 挂载 | 源 `/opt/1panel/mcp/mcp-1panel` → 目标 `/opt/1panel/mcp/mcp-1panel` |
 | 端口 | 如 `10002`，按需开启外部访问 |
 
@@ -199,7 +216,7 @@ cp -r . /opt/1panel/mcp/mcp-1panel   # 把可运行目录放到固定路径
       "command": "npx",
       "args": ["-y", "@edanad113/mcp-1panel"],
       "env": {
-        "PANEL_HOST": "http://localhost:8080",
+        "PANEL_HOST": "<容器内可达的面板地址，见上方⚠️>",
         "PANEL_API_KEY": "<your API key>"
       }
     }
@@ -548,6 +565,7 @@ cp -r . /opt/1panel/mcp/mcp-1panel   # 把可运行目录放到固定路径
 
 - 填写**你自己那台 1Panel 面板**的访问地址，以 `http://` 或 `https://` 开头，**不要带** `/api/v2` 路径（程序会自动拼接）。
 - 默认本地面板地址是 `http://localhost:8080`。
+- 🐳 部署在 1Panel / Docker 容器内时，**不要填 `localhost`**（容器内的 `localhost` 指向容器自身，访问不到宿主机）；请填从容器内可达的地址，如 `http://172.17.0.1:<面板端口>`、`http://host.docker.internal:<面板端口>` 或宿主机可达的内网/公网地址。
 - 如果面板改了端口、绑定了域名、或通过反向代理访问，就填实际的访问地址，例如：
   - `http://192.168.1.100:8080`（局域网 IP + 端口）
   - `https://panel.example.com`（域名 + HTTPS，需已配置证书）
@@ -659,7 +677,19 @@ npm publish --access public
 
 ---
 
-## v0.1.0 更新
+## 更新日志
+
+### v0.1.3
+
+- **docs**：1Panel 容器部署补充 `PANEL_HOST` 不能填 `localhost` 的说明（容器内需用 `172.17.0.1` / `host.docker.internal` 等宿主机可达地址）
+- **docs**：补充 Supergateway 桥接镜像（`supercorp/supergateway`）国内拉取失败时手动 `docker pull` 的方法
+
+### v0.1.2
+
+- **fix(入口)**：支持 npx 安装布局下依赖被提升（hoisted deps）的情况，沿目录向上查找 `@modelcontextprotocol/sdk`
+- 服务版本号改为从 `package.json` 读取，避免硬编码
+
+### v0.1.0
 
 - **api-proxy.js**：初始化失败不再永久缓存错误 — 环境变量修复后即刻生效，无需重启
 - **helpers.js**：`toolWithParams` 仅将有默认值的参数标记为可选，`required` 数组只含无 `default` 的参数
