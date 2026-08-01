@@ -593,16 +593,6 @@ npm publish --access public
 
 - **README 重构**：精简冗余内容（移除 npm 包名/scope 说明），整合「快速开始 / 客户端配置 / 1Panel 内置 MCP 管理」，新增「特性」与「常见问题」
 
-### v0.1.3
-
-- **docs**：1Panel 容器部署补充 `PANEL_HOST` 不能填 `localhost` 的说明（容器内需用 `172.17.0.1` / `host.docker.internal` 等宿主机可达地址）
-- **docs**：补充 Supergateway 桥接镜像（`supercorp/supergateway`）国内拉取失败时手动 `docker pull` 的方法
-
-### v0.1.2
-
-- **fix(入口)**：支持 npx 安装布局下依赖被提升（hoisted deps）的情况，沿目录向上查找 `@modelcontextprotocol/sdk`
-- 服务版本号改为从 `package.json` 读取，避免硬编码
-
 ### v0.1.0
 
 - **api-proxy.js**：初始化失败不再永久缓存错误 — 环境变量修复后即刻生效，无需重启
