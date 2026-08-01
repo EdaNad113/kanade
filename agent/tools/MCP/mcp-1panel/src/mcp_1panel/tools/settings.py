@@ -27,7 +27,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_setting_by_key(key: str = "PanelName") -> str:
         """按 Key 查询系统设置"""
         p = get_client()
-        data = p.post("/core/settings/by", {"key": key})
+        data = p.get(f"/settings/get/{key}")
         lines = [header(f"系统设置: {key}")]
         if isinstance(data, dict):
             # Format as key: value
@@ -45,28 +45,28 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_ssh_conn() -> str:
         """本地 SSH 连接配置"""
         p = get_client()
-        data = p.get("/core/ssh/conn")
+        data = p.get("/settings/ssh/conn")
         return fmt_generic(data, "SSH 连接配置")
 
     @mcp.tool()
     def panel_ssh_check() -> str:
         """本地连接信息检查"""
         p = get_client()
-        data = p.get("/core/ssh/check")
+        data = p.post("/settings/ssh/check/info", {})
         return fmt_generic(data, "SSH 连接检查")
 
     @mcp.tool()
     def panel_backup_dir() -> str:
         """本地备份目录路径"""
         p = get_client()
-        data = p.get("/core/backup/dir")
+        data = p.get("/settings/basedir")
         return fmt_generic(data, "备份目录")
 
     @mcp.tool()
     def panel_system_available() -> str:
         """系统可用状态 — 各模块健康检查"""
         p = get_client()
-        data = p.get("/core/system/available")
+        data = p.get("/settings/search/available")
         lines = [header("系统可用状态")]
         if isinstance(data, dict):
             for service, status in data.items():
@@ -89,7 +89,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_snapshot_list() -> str:
         """系统快照列表 — 可用的回滚点"""
         p = get_client()
-        data = p.get("/core/snapshots")
+        data = p.post("/settings/snapshot/search", {"page": 1, "pageSize": 50, "orderBy": "createdAt", "order": "descending"})
         lines = [header("系统快照列表")]
         if isinstance(data, list):
             for snap in data:
@@ -114,14 +114,14 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_snapshot_info() -> str:
         """系统快照信息 — 状态、时间"""
         p = get_client()
-        data = p.get("/core/snapshot/info")
+        data = p.get("/settings/snapshot/load")
         return fmt_generic(data, "快照信息")
 
     @mcp.tool()
     def panel_snapshot_recover(id: int) -> str:
         """快照恢复信息查询"""
         p = get_client()
-        data = p.get(f"/core/snapshot/recover?id={id}")
+        data = p.post("/settings/snapshot/recover", {"id": id})
         return fmt_generic(data, f"快照恢复 (ID: {id})")
 
     # -- 收集 handler 供 resources 复用 --

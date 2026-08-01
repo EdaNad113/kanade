@@ -52,14 +52,14 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_fail2ban_conf() -> str:
         """Fail2ban 配置详情 — 封禁规则、时间"""
         p = get_client()
-        data = p.get("/toolbox/fail2ban/config")
+        data = p.get("/toolbox/fail2ban/load/conf")
         return fmt_generic(data, "Fail2ban 配置")
 
     @mcp.tool()
     def panel_fail2ban_list() -> str:
         """Fail2ban 封禁 IP 列表"""
         p = get_client()
-        data = p.get("/toolbox/fail2ban/list")
+        data = p.post("/toolbox/fail2ban/search", {"page": 1, "pageSize": 50})
         lines = [header("Fail2ban 封禁 IP")]
         if isinstance(data, list):
             for entry in data:
@@ -200,7 +200,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_clamav_records() -> str:
         """ClamAV 查杀记录"""
         p = get_client()
-        data = p.get("/toolbox/clam/records")
+        data = p.post("/toolbox/clam/record/search", {"page": 1, "pageSize": 20})
         lines = [header("ClamAV 查杀记录")]
         if isinstance(data, list):
             for rec in data:
@@ -237,7 +237,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_clamav_files() -> str:
         """ClamAV 扫描文件配置"""
         p = get_client()
-        data = p.get("/toolbox/clam/files")
+        data = p.post("/toolbox/clam/file/search", {"page": 1, "pageSize": 50})
         lines = [header("ClamAV 扫描文件")]
         if isinstance(data, list):
             for entry in data:
@@ -270,7 +270,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_device_dns() -> str:
         """设备 DNS 配置检查"""
         p = get_client()
-        data = p.get("/toolbox/device/dns")
+        data = p.post("/toolbox/device/check/dns", {})
         return fmt_generic(data, "DNS 配置")
 
     # ------------------------------------------------------------------ #
@@ -281,7 +281,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_timezones() -> str:
         """时区选项列表"""
         p = get_client()
-        data = p.get("/toolbox/timezones")
+        data = p.get("/toolbox/device/zone/options")
         lines = [header("时区列表")]
         if isinstance(data, list):
             for tz in data:

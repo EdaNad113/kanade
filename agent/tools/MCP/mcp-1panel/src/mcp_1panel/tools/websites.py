@@ -51,28 +51,28 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_website_detail(id: int) -> str:
         """网站详情 — 配置、状态、域名"""
         p = get_client()
-        data = p.get(f"/websites/detail?id={id}")
+        data = p.get(f"/websites/{id}")
         return fmt_generic(data, f"网站详情 (ID: {id})")
 
     @mcp.tool()
     def panel_website_nginx(id: int, type: str = "nginx") -> str:
         """网站 Nginx 配置"""
         p = get_client()
-        data = p.get(f"/websites/nginx?id={id}&type={type}")
+        data = p.get(f"/websites/{id}/config/{type}")
         return fmt_generic(data, f"Nginx 配置 (ID: {id})")
 
     @mcp.tool()
     def panel_website_https(id: int) -> str:
         """网站 HTTPS 配置"""
         p = get_client()
-        data = p.get(f"/websites/https?id={id}")
+        data = p.get(f"/websites/{id}/https")
         return fmt_generic(data, f"HTTPS 配置 (ID: {id})")
 
     @mcp.tool()
     def panel_website_domains(id: int) -> str:
         """网站域名列表"""
         p = get_client()
-        data = p.get(f"/websites/domains?id={id}")
+        data = p.get(f"/websites/domains/{id}")
         lines = [header(f"域名列表 (ID: {id})")]
         if isinstance(data, list):
             for d in data:
@@ -91,14 +91,14 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_website_ssl(id: int) -> str:
         """网站 SSL 证书"""
         p = get_client()
-        data = p.get(f"/websites/ssl?id={id}")
+        data = p.get(f"/websites/ssl/{id}")
         return fmt_generic(data, f"SSL 证书 (ID: {id})")
 
     @mcp.tool()
     def panel_website_ssl_by_site(id: int) -> str:
         """按网站 ID 查询 SSL 证书"""
         p = get_client()
-        data = p.get(f"/websites/ssl/bysite?id={id}")
+        data = p.get(f"/websites/ssl/website/{id}")
         return fmt_generic(data, f"站点 SSL 证书 (ID: {id})")
 
     # ------------------------------------------------------------------ #
@@ -109,7 +109,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_ssl_list() -> str:
         """SSL 证书列表"""
         p = get_client()
-        data = p.get("/websites/ssl/list")
+        data = p.post("/websites/ssl/search", {"page": 1, "pageSize": 50})
         lines = [header("SSL 证书列表", len(data) if isinstance(data, list) else None)]
         if isinstance(data, list):
             for cert in data:
@@ -129,7 +129,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_acme_accounts() -> str:
         """ACME 账户列表 — Let's Encrypt 等"""
         p = get_client()
-        data = p.get("/websites/acme/accounts")
+        data = p.post("/websites/acme/search", {"page": 1, "pageSize": 50})
         lines = [header("ACME 账户", len(data) if isinstance(data, list) else None)]
         if isinstance(data, list):
             for acc in data:
@@ -150,7 +150,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_dns_accounts() -> str:
         """DNS 账户列表 — 域名解析服务商"""
         p = get_client()
-        data = p.get("/websites/dns/accounts")
+        data = p.post("/websites/dns/search", {"page": 1, "pageSize": 50})
         lines = [header("DNS 账户", len(data) if isinstance(data, list) else None)]
         if isinstance(data, list):
             for acc in data:
@@ -174,7 +174,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_ca_certificates() -> str:
         """CA 证书列表 — 自定义证书颁发机构"""
         p = get_client()
-        data = p.get("/websites/ca")
+        data = p.post("/websites/ca/search", {"page": 1, "pageSize": 50})
         lines = [header("CA 证书", len(data) if isinstance(data, list) else None)]
         if isinstance(data, list):
             for ca in data:
@@ -199,7 +199,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_ca_detail(id: int) -> str:
         """CA 证书详情"""
         p = get_client()
-        data = p.get(f"/websites/ca/detail?id={id}")
+        data = p.get(f"/websites/ca/{id}")
         return fmt_generic(data, f"CA 证书详情 (ID: {id})")
 
     # ------------------------------------------------------------------ #
@@ -210,7 +210,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_website_db() -> str:
         """网站关联数据库"""
         p = get_client()
-        data = p.get("/websites/db")
+        data = p.get("/websites/databases")
         lines = [header("网站关联数据库", len(data) if isinstance(data, list) else None)]
         if isinstance(data, list):
             for db in data:
@@ -247,14 +247,14 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_website_cors(id: int) -> str:
         """网站 CORS 配置"""
         p = get_client()
-        data = p.get(f"/websites/cors?id={id}")
+        data = p.get(f"/websites/cors/{id}")
         return fmt_generic(data, f"CORS 配置 (ID: {id})")
 
     @mcp.tool()
     def panel_website_realip(id: int) -> str:
         """网站 RealIP 配置"""
         p = get_client()
-        data = p.get(f"/websites/realip?id={id}")
+        data = p.get(f"/websites/realip/config/{id}")
         return fmt_generic(data, f"RealIP 配置 (ID: {id})")
 
     # ------------------------------------------------------------------ #
@@ -265,7 +265,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_website_upstreams() -> str:
         """负载均衡上游列表"""
         p = get_client()
-        data = p.get("/websites/upstreams")
+        data = p.get("/websites/lbs")
         lines = [header("上游列表", len(data) if isinstance(data, list) else None)]
         if isinstance(data, list):
             for up in data:
@@ -289,7 +289,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_website_proxy(id: int) -> str:
         """网站反向代理配置"""
         p = get_client()
-        data = p.get(f"/websites/proxy?id={id}")
+        data = p.post("/websites/proxies", {"websiteId": id})
         return fmt_generic(data, f"反向代理 (ID: {id})")
 
     @mcp.tool()
@@ -314,14 +314,14 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_website_antileech(id: int) -> str:
         """网站防盗链配置"""
         p = get_client()
-        data = p.get(f"/websites/antileech?id={id}")
+        data = p.post("/websites/leech", {"websiteId": id})
         return fmt_generic(data, f"防盗链 (ID: {id})")
 
     @mcp.tool()
     def panel_website_auth(id: int) -> str:
         """网站 BasicAuth 认证配置"""
         p = get_client()
-        data = p.get(f"/websites/auth?id={id}")
+        data = p.post("/websites/auths", {"websiteId": id})
         return fmt_generic(data, f"BasicAuth (ID: {id})")
 
     @mcp.tool()

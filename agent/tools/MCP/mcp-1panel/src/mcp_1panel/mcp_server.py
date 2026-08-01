@@ -12,16 +12,8 @@ from mcp.server.fastmcp import FastMCP
 from mcp_1panel.panel_client import PanelClient
 
 
-# ---------------------------------------------------------------------------
 # 注册期间收集所有工具 handler 用于 resources 复用
-# ---------------------------------------------------------------------------
 _tool_handlers: dict = {}
-
-
-def _store_handler(fn):
-    """Store a tool function in the global handler registry by its __name__."""
-    _tool_handlers[fn.__name__] = fn
-    return fn
 
 
 # ---------------------------------------------------------------------------

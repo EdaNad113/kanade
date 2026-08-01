@@ -48,7 +48,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_runtime_detail(id: int) -> str:
         """运行环境详情"""
         p = get_client()
-        data = p.get("/runtimes/detail", {"id": id})
+        data = p.get(f"/runtimes/{id}")
         return fmt_generic(data, f"运行环境详情 (ID: {id})")
 
     # ------------------------------------------------------------------ #
@@ -59,7 +59,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_php_extensions(id: int) -> str:
         """PHP 扩展列表"""
         p = get_client()
-        data = p.get("/runtimes/php/extensions", {"id": id})
+        data = p.get(f"/runtimes/php/{id}/extensions")
         lines = [header(f"PHP 扩展 (ID: {id})")]
         if isinstance(data, list):
             for ext in data:
@@ -86,7 +86,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_php_config(id: int) -> str:
         """PHP 运行配置"""
         p = get_client()
-        data = p.get("/runtimes/php/config", {"id": id})
+        data = p.get(f"/runtimes/php/config/{id}")
         return fmt_generic(data, f"PHP 运行配置 (ID: {id})")
 
     # ------------------------------------------------------------------ #
@@ -97,7 +97,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_php_container(id: int) -> str:
         """PHP 容器配置"""
         p = get_client()
-        data = p.get("/runtimes/php/container", {"id": id})
+        data = p.get(f"/runtimes/php/container/{id}")
         return fmt_generic(data, f"PHP 容器配置 (ID: {id})")
 
     # ------------------------------------------------------------------ #
@@ -108,7 +108,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_php_fpm_config(id: int) -> str:
         """PHP-FPM 配置"""
         p = get_client()
-        data = p.get("/runtimes/php/fpm/config", {"id": id})
+        data = p.get(f"/runtimes/php/fpm/config/{id}")
         return fmt_generic(data, f"PHP-FPM 配置 (ID: {id})")
 
     # ------------------------------------------------------------------ #
@@ -119,7 +119,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_php_fpm_status(id: int) -> str:
         """PHP-FPM 运行状态"""
         p = get_client()
-        data = p.get("/runtimes/php/fpm/status", {"id": id})
+        data = p.get(f"/runtimes/php/fpm/status/{id}")
         return fmt_generic(data, f"PHP-FPM 状态 (ID: {id})")
 
     # ------------------------------------------------------------------ #
@@ -178,7 +178,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_supervisor_process_detail(id: int) -> str:
         """Supervisor 进程详情"""
         p = get_client()
-        data = p.get("/runtimes/supervisor/process/detail", {"id": id})
+        data = p.get(f"/runtimes/supervisor/process/{id}")
         return fmt_generic(data, f"Supervisor 进程详情 (ID: {id})")
 
     # ------------------------------------------------------------------ #
@@ -189,7 +189,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_runtime_php_extensions_list(id: int) -> str:
         """PHP 可用扩展列表"""
         p = get_client()
-        data = p.get("/runtimes/php/extensions/list", {"id": id})
+        data = p.post("/runtimes/php/extensions/search", {"page": 1, "pageSize": 50, "runtimeId": id})
         lines = [header(f"PHP 可用扩展 (ID: {id})")]
         if isinstance(data, list):
             for ext in data:

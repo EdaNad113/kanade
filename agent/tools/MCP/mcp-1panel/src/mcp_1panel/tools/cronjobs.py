@@ -46,7 +46,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_cronjob_records(id: int) -> str:
         """计划任务执行记录 — 历史执行日志"""
         p = get_client()
-        data = p.post("/cronjobs/records/search", {
+        data = p.post("/cronjobs/search/records", {
             "page": 1, "pageSize": 20, "cronjobID": id,
         })
         lines, items = fmt_search(data, f"任务执行记录 (ID: {id})")
@@ -67,7 +67,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_cronjob_info(id: int) -> str:
         """计划任务详情 — 配置信息"""
         p = get_client()
-        data = p.get("/cronjobs/info", {"id": id})
+        data = p.post("/cronjobs/load/info", {"id": id})
         return fmt_generic(data, f"计划任务详情 (ID: {id})")
 
     @mcp.tool()

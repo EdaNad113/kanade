@@ -1,6 +1,7 @@
 """MCP tools for 1Panel App Store management."""
 
 from typing import Any, Callable, Dict, List
+from urllib.parse import quote
 from mcp_1panel.tools.helpers import (
     icon_green,
     icon_red,
@@ -40,7 +41,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_app_store_list() -> str:
         """应用商店应用列表 — 所有可用应用"""
         p = get_client()
-        data = p.get("/apps/store/list", {"page": 1, "pageSize": 50})
+        data = p.post("/apps/search", {"page": 1, "pageSize": 50})
         lines, items = fmt_search(data, "应用商店")
         for app in items:
             lines.append(f"  {app.get('name', '?')}  v{app.get('version', '?')}  [{app.get('description', '?')}]")
@@ -56,7 +57,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_app_detail(key: str) -> str:
         """应用详情 — 按 key 查询"""
         p = get_client()
-        data = p.post("/apps/store/detail/bykey", {"key": key})
+        data = p.get(f"/apps/{quote(key)}")
         return fmt_generic(data, f"应用详情: {key}")
 
     @mcp.tool()
@@ -84,7 +85,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_app_service(key: str) -> str:
         """应用服务详情 — 按 key 查询"""
         p = get_client()
-        data = p.post("/apps/installed/service", {"key": key})
+        data = p.get(f"/apps/services/{quote(key)}")
         return fmt_generic(data, f"应用服务: {key}")
 
     # ------------------------------------------------------------------ #
@@ -95,7 +96,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_app_detail_by_id(id: int) -> str:
         """应用详情（按 ID）"""
         p = get_client()
-        data = p.post("/apps/store/detail/byid", {"id": id})
+        data = p.get(f"/apps/details/{id}")
         return fmt_generic(data, f"应用详情 (ID: {id})")
 
     # ------------------------------------------------------------------ #
@@ -106,14 +107,14 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_app_installed_detail(id: int) -> str:
         """已安装应用详情 — 安装信息"""
         p = get_client()
-        data = p.get("/apps/installed/detail", {"id": id})
+        data = p.get(f"/apps/installed/info/{id}")
         return fmt_generic(data, f"已安装应用详情 (ID: {id})")
 
     @mcp.tool()
     def panel_app_installed_params(id: int) -> str:
         """已安装应用参数 — 安装时的配置参数"""
         p = get_client()
-        data = p.get("/apps/installed/param", {"id": id})
+        data = p.get(f"/apps/installed/params/{id}")
         return fmt_generic(data, f"已安装应用参数 (ID: {id})")
 
     # ------------------------------------------------------------------ #
@@ -124,7 +125,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_app_check_updates() -> str:
         """应用更新检查 — 有更新的应用列表"""
         p = get_client()
-        data = p.get("/apps/installed/checkupdates")
+        data = p.get("/apps/checkupdate")
         lines = [header("应用更新检查")]
         if isinstance(data, list):
             for upd in data:
@@ -144,7 +145,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_app_ignored_upgrades() -> str:
         """已忽略升级的应用列表"""
         p = get_client()
-        data = p.get("/apps/ignored/upgrade")
+        data = p.get("/apps/ignored/detail")
         lines = [header("已忽略升级的应用")]
         if isinstance(data, list):
             for app in data:

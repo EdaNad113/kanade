@@ -113,7 +113,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_docker_status() -> str:
         """Docker 守护进程状态 — 运行状态、版本"""
         p = get_client()
-        data = p.get("/containers/daemon/status")
+        data = p.get("/containers/docker/status")
         lines = [header("Docker 守护进程状态")]
         if isinstance(data, dict):
             running = data.get("status", data.get("State", "")) == "running"
@@ -134,7 +134,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_compose_templates() -> str:
         """Docker Compose 模板列表"""
         p = get_client()
-        data = p.get("/containers/compose/template")
+        data = p.get("/containers/template")
         lines = [header("Compose 模板", len(data) if isinstance(data, list) else None)]
         for tpl in data or []:
             name = tpl.get("name", tpl.get("title", "?"))
@@ -152,7 +152,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_processes() -> str:
         """容器进程状态（来自 Docker stats）"""
         p = get_client()
-        data = p.post("/containers/stats/list", {})
+        data = p.get("/containers/list/stats")
         lines = [header("容器进程 / Stats")]
         for proc in (data or [])[:30]:
             name = proc.get("name", proc.get("Name", "?"))
@@ -172,21 +172,21 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_docker_daemon() -> str:
         """Docker 守护进程配置 (daemon.json)"""
         p = get_client()
-        data = p.get("/containers/daemon")
+        data = p.get("/containers/daemonjson")
         return fmt_generic(data, "Docker 守护进程配置")
 
     @mcp.tool()
     def panel_docker_daemon_file() -> str:
         """Docker daemon.json 文件内容"""
         p = get_client()
-        data = p.get("/containers/daemon/file")
+        data = p.get("/containers/daemonjson/file")
         return fmt_generic(data, "daemon.json")
 
     @mcp.tool()
     def panel_container_limits() -> str:
         """Docker 容器资源限制配置"""
         p = get_client()
-        data = p.get("/containers/limits")
+        data = p.get("/containers/limit")
         return fmt_generic(data, "容器资源限制")
 
     @mcp.tool()
@@ -213,7 +213,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_container_logs() -> str:
         """Docker 容器日志概览"""
         p = get_client()
-        data = p.get("/containers/logs")
+        data = p.get("/containers/search/log")
         return fmt_generic(data, "容器日志")
 
     @mcp.tool()
@@ -227,7 +227,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_image_options() -> str:
         """Docker 镜像仓库选项 — 支持的加速器"""
         p = get_client()
-        data = p.get("/containers/image/options")
+        data = p.get("/containers/image")
         return fmt_generic(data, "镜像仓库选项")
 
     # ------------------------------------------------------------------ #
@@ -245,7 +245,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_container_stats(id: str) -> str:
         """容器资源统计 — CPU/内存/网络"""
         p = get_client()
-        data = p.get("/containers/stats", {"id": id})
+        data = p.post("/containers/item/stats", {"id": id})
         lines = [header(f"容器 Stats: {id}")]
         if isinstance(data, dict):
             for k, v in data.items():
@@ -271,7 +271,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_containers_by_image(image: str) -> str:
         """按镜像查找容器"""
         p = get_client()
-        data = p.post("/containers/listbyimage", {"image": image})
+        data = p.post("/containers/list/byimage", {"imageName": image})
         lines = [header(f"镜像: {image} 的容器", len(data) if isinstance(data, list) else None)]
         for c in data or []:
             running = c.get("state") == "running"

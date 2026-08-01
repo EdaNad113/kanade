@@ -117,7 +117,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_firewall_filter() -> str:
         """防火墙过滤规则 — iptables 规则列表"""
         p = get_client()
-        data = p.get("/hosts/firewall/filter")
+        data = p.post("/hosts/firewall/filter/search", {})
         lines = [header("防火墙过滤规则")]
         if isinstance(data, list):
             for rule in data:
@@ -225,7 +225,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_ssh_certs() -> str:
         """SSH 证书列表 — 密钥对"""
         p = get_client()
-        data = p.get("/hosts/ssh/certs")
+        data = p.post("/hosts/ssh/cert/search", {"page": 1, "pageSize": 50})
         lines = [header("SSH 证书")]
         if isinstance(data, list):
             for cert in data:
@@ -250,14 +250,14 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_ssh_conf(id: int) -> str:
         """SSH 配置文件内容"""
         p = get_client()
-        data = p.get("/hosts/ssh/conf", {"id": id})
+        data = p.post("/hosts/ssh/file", {"id": id})
         return fmt_generic(data, f"SSH 配置 (ID: {id})")
 
     @mcp.tool()
     def panel_ssh_logs(rows: int = 20) -> str:
         """SSH 登录日志"""
         p = get_client()
-        data = p.post("/hosts/ssh/log/search", {
+        data = p.post("/hosts/ssh/log", {
             "page": 1, "pageSize": rows,
         })
         lines, items = fmt_search(data, "SSH 登录日志")
@@ -284,8 +284,8 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_monitor_history(type: str = "cpu", rows: int = 20) -> str:
         """历史监控数据查询"""
         p = get_client()
-        data = p.post("/hosts/monitor/history", {
-            "type": type, "count": rows,
+        data = p.post("/hosts/monitor/search", {
+            "page": 1, "pageSize": rows, "type": type,
         })
         lines = [header(f"监控历史: {type}")]
         if isinstance(data, list):
@@ -320,7 +320,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_system_component(name: str = "docker") -> str:
         """检查系统组件是否存在"""
         p = get_client()
-        data = p.get("/hosts/component/check", {"name": name})
+        data = p.get(f"/hosts/components/{name}")
         lines = [header(f"系统组件: {name}")]
         if isinstance(data, dict):
             exists = data.get("exists", data.get("isExist", data.get("status", False)))
@@ -346,14 +346,14 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_tool_status(name: str = "supervisor") -> str:
         """系统工具状态查询"""
         p = get_client()
-        data = p.get("/hosts/tools/status", {"name": name})
+        data = p.post("/hosts/tool", {"name": name})
         return fmt_generic(data, f"工具状态: {name}")
 
     @mcp.tool()
     def panel_tool_config(name: str = "supervisor") -> str:
         """系统工具配置"""
         p = get_client()
-        data = p.get("/hosts/tools/config", {"name": name})
+        data = p.post("/hosts/tool/config", {"name": name})
         return fmt_generic(data, f"工具配置: {name}")
 
     # ------------------------------------------------------------------ #
@@ -364,7 +364,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_supervisor_processes() -> str:
         """Supervisor 进程列表"""
         p = get_client()
-        data = p.get("/hosts/supervisor/processes")
+        data = p.get("/hosts/tool/supervisor/process")
         lines = [header("Supervisor 进程")]
         if isinstance(data, list):
             for proc in data:
@@ -396,7 +396,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_gpu_monitor() -> str:
         """GPU 监控历史数据"""
         p = get_client()
-        data = p.get("/hosts/gpu/monitor")
+        data = p.post("/hosts/monitor/gpu/search", {"page": 1, "pageSize": 20})
         lines = [header("GPU 监控")]
         if isinstance(data, list):
             for entry in data:

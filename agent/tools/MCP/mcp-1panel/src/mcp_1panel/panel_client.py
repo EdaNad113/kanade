@@ -30,8 +30,13 @@ class PanelClient:
         url = self.base + path
         headers = self._auth_headers()
         resp = requests.request(method, url, headers=headers, timeout=15, **kwargs)
-        data = resp.json()
-        if data.get("code") != 200:
+        try:
+            data = resp.json()
+        except ValueError:
+            raise RuntimeError(
+                f"API 错误 [{resp.status_code}]: 响应不是合法 JSON: {resp.text[:200]}"
+            )
+        if resp.status_code != 200 or data.get("code") != 200:
             msg = data.get("message", resp.text)
             raise RuntimeError(f"API 错误 [{resp.status_code}]: {msg}")
         return data.get("data")

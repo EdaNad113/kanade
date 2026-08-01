@@ -43,7 +43,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_backup_accounts() -> str:
         """备份账号列表 — 存储类型、配置"""
         p = get_client()
-        data = p.post("/backups/account/search", {"page": 1, "pageSize": 20})
+        data = p.post("/backups/search", {"page": 1, "pageSize": 50})
         lines, items = fmt_search(data, "备份账号")
         for a in items:
             st = icon_green() if a.get("status") == "Enabled" else icon_red()
@@ -60,7 +60,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_backup_options() -> str:
         """备份账号选项 — 本地/远程存储类型、配置"""
         p = get_client()
-        data = p.get("/backups/account/options")
+        data = p.get("/backups/options")
         lines = [header("备份账号选项")]
         if isinstance(data, list):
             for opt in data:

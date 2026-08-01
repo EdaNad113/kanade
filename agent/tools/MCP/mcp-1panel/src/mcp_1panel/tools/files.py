@@ -78,7 +78,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_file_size(path: str = "/") -> str:
         """文件/目录大小 — 查询路径所占用的磁盘空间"""
         p = get_client()
-        data = p.post("/files/tree/size", {"path": path})
+        data = p.post("/files/size", {"path": path})
         lines = [header(f"文件大小: {path}")]
         if isinstance(data, dict):
             size = data.get("size", data.get("total", "?"))
@@ -100,7 +100,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_file_check(path: str = "/") -> str:
         """检查文件是否存在 — 验证路径有效性"""
         p = get_client()
-        data = p.post("/files/tree/check", {"path": path})
+        data = p.post("/files/check", {"path": path})
         lines = [header(f"检查路径: {path}")]
         if isinstance(data, dict):
             ok = data.get("exist", data.get("exists", False))
@@ -122,7 +122,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_favorites() -> str:
         """文件收藏夹列表 — 已收藏的文件/目录"""
         p = get_client()
-        data = p.get("/files/favorites")
+        data = p.post("/files/favorite/search", {"page": 1, "pageSize": 50})
         lines = [header("文件收藏夹")]
         if isinstance(data, list):
             for fav in data:
@@ -145,7 +145,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_recycle_bin() -> str:
         """回收站文件列表 — 已删除但可恢复的文件"""
         p = get_client()
-        data = p.get("/files/recycle/bin")
+        data = p.post("/files/recycle/search", {"page": 1, "pageSize": 50})
         lines = [header("回收站")]
         if isinstance(data, list):
             for item in data:
@@ -173,7 +173,7 @@ def register_tools(mcp, get_client, handlers=None):
         lines = [header("回收站状态")]
         if isinstance(data, dict):
             enabled = data.get("enable", data.get("enabled", data.get("status", False)))
-            lines.append(f"  {'\U0001f7e2 已启用' if enabled else '\U0001f534 已禁用'}")
+            lines.append(f"  {icon_green() if enabled else icon_red()} {'已启用' if enabled else '已禁用'}")
             for k, v in data.items():
                 if k not in ("enable", "enabled", "status"):
                     lines.append(f"  {k}: {fmt_val(v)}")
@@ -247,7 +247,7 @@ def register_tools(mcp, get_client, handlers=None):
         """批量检查文件是否存在 — paths 为逗号分隔的路径字符串"""
         p = get_client()
         path_list = [p.strip() for p in paths.split(",") if p.strip()]
-        data = p.post("/files/tree/batch/check", {"paths": path_list})
+        data = p.post("/files/batch/check", {"paths": path_list})
         lines = [header("批量文件检查", len(path_list))]
         if isinstance(data, dict):
             results = data.get("results", data.get("items", data.get("data", [])))

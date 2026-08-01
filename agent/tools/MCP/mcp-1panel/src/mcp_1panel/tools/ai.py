@@ -53,10 +53,10 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_ai_providers() -> str:
         """AI 供应商列表 — 名称、模型支持"""
         p = get_client()
-        data = p.post("/ai/providers/search", {"page": 1, "pageSize": 20})
+        data = p.get("/ai/agents/providers")
         lines, items = fmt_search(data, "AI 供应商")
         for prov in items:
-            lines.append(f"  {prov.get('name', '?')}  [{prov.get('models', '?')}]")
+            lines.append(f"  {prov.get('displayName', prov.get('provider', '?'))}  [{prov.get('models', '?')}]")
         if not items:
             lines.append("  (空)")
         return "\n".join(lines)
@@ -81,21 +81,21 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_gpu_load() -> str:
         """GPU 负载信息 — GPU 型号、显存使用率"""
         p = get_client()
-        data = p.get("/ai/gpu")
+        data = p.get("/ai/gpu/load")
         return fmt_generic(data, "GPU 负载")
 
     @mcp.tool()
     def panel_ai_overview() -> str:
         """AI 全局概览 — 智能体总数、运行状态、渠道概览"""
         p = get_client()
-        data = p.get("/ai/overview")
+        data = p.post("/ai/agents/overview", {})
         return fmt_generic(data, "AI 全局概览")
 
     @mcp.tool()
     def panel_ai_agent_roles() -> str:
         """AI 智能体角色列表 — 已配置的角色"""
         p = get_client()
-        data = p.get("/ai/agents/roles")
+        data = p.post("/ai/agents/agent/list", {})
         lines = [header("AI 智能体角色")]
         if isinstance(data, list):
             for role in data:
@@ -113,46 +113,52 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_ai_model_config() -> str:
         """AI 模型配置详情 — 当前模型参数"""
         p = get_client()
-        data = p.get("/ai/model/config")
+        data = p.post("/ai/agents/model/get", {})
         return fmt_generic(data, "AI 模型配置")
 
     @mcp.tool()
     def panel_ai_config_file() -> str:
         """AI Agent 配置文件内容"""
         p = get_client()
-        data = p.get("/ai/config/file")
+        data = p.post("/ai/agents/config-file/get", {})
         return fmt_generic(data, "AI 配置文件")
 
     @mcp.tool()
     def panel_ai_security() -> str:
         """AI 安全配置 — 访问控制、权限设置"""
         p = get_client()
-        data = p.get("/ai/security")
+        data = p.post("/ai/agents/security/get", {})
         return fmt_generic(data, "AI 安全配置")
 
     @mcp.tool()
     def panel_ai_channels() -> str:
         """AI 渠道配置概览 — 各平台渠道状态"""
         p = get_client()
-        data = p.get("/ai/channels")
+        channels = [
+            ("钉钉", "/ai/agents/channel/dingtalk/get"),
+            ("Discord", "/ai/agents/channel/discord/get"),
+            ("飞书", "/ai/agents/channel/feishu/get"),
+            ("QQ 机器人", "/ai/agents/channel/qqbot/get"),
+            ("Telegram", "/ai/agents/channel/telegram/get"),
+            ("企业微信", "/ai/agents/channel/wecom/get"),
+        ]
         lines = [header("AI 渠道配置")]
-        if isinstance(data, list):
-            for ch in data:
-                st = icon_green() if ch.get("status") == "Enabled" else icon_red()
-                lines.append(f"  {st} {ch.get('name', '?')}  [{ch.get('type', '?')}]  {ch.get('status', '?')}")
-        elif isinstance(data, dict):
-            lines.extend(fmt_obj(data))
-        else:
-            lines.append(f"  {fmt_val(data)}")
-        if not data:
-            lines.append("  (空)")
+        for name, ep in channels:
+            try:
+                d = p.post(ep, {}) or {}
+                enabled = bool(d.get("enable", d.get("enabled", False)))
+                st = icon_green() if enabled else icon_red()
+                token = "已配置" if d.get("botToken") else "未配置"
+                lines.append(f"  {st} {name}: {'启用' if enabled else '停用'}  ({token})")
+            except Exception as e:
+                lines.append(f"  {name}: 查询失败 ({e})")
         return "\n".join(lines)
 
     @mcp.tool()
     def panel_ai_skills_list() -> str:
         """AI 技能列表 — 已安装的技能"""
         p = get_client()
-        data = p.get("/ai/skills/list")
+        data = p.post("/ai/agents/skills/list", {})
         lines = [header("AI 技能")]
         if isinstance(data, list):
             for skill in data:
@@ -175,7 +181,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_ai_skills_search(keywords: str) -> str:
         """搜索 AI 技能 — 按关键词查询"""
         p = get_client()
-        data = p.post("/ai/skills/search", {
+        data = p.post("/ai/agents/skills/search", {
             "page": 1,
             "pageSize": 20,
             "keywords": keywords,
@@ -197,21 +203,21 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_mcp_domain() -> str:
         """MCP Server 域名绑定信息"""
         p = get_client()
-        data = p.get("/ai/mcp/domain")
+        data = p.get("/ai/mcp/domain/get")
         return fmt_generic(data, "MCP 域名绑定")
 
     @mcp.tool()
     def panel_ai_other_config() -> str:
         """AI 其他配置 — 杂项设置"""
         p = get_client()
-        data = p.get("/ai/other/config")
+        data = p.post("/ai/agents/other/get", {})
         return fmt_generic(data, "AI 其他配置")
 
     @mcp.tool()
     def panel_ai_agent_md() -> str:
         """AI 智能体 Markdown 文件列表"""
         p = get_client()
-        data = p.get("/ai/agents/md")
+        data = p.post("/ai/agents/agent/md/list", {})
         lines = [header("AI 智能体 Markdown 文件")]
         if isinstance(data, list):
             for md in data:
@@ -229,7 +235,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_ai_agent_channels() -> str:
         """AI 智能体角色渠道配置"""
         p = get_client()
-        data = p.get("/ai/agents/channels")
+        data = p.post("/ai/agents/agent/channels", {})
         lines = [header("AI 智能体角色渠道")]
         if isinstance(data, list):
             for ch in data:
@@ -248,8 +254,11 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_ollama_config() -> str:
         """Ollama 运行配置状态"""
         p = get_client()
-        data = p.get("/ai/ollama/config")
-        return fmt_generic(data, "Ollama 配置")
+        try:
+            data = p.post("/ai/ollama/model", {})
+            return fmt_generic(data, "Ollama 配置")
+        except Exception:
+            return "= Ollama =\n  Ollama 未安装或未运行"
 
 
     # -- 收集 handler 供 resources 复用 --

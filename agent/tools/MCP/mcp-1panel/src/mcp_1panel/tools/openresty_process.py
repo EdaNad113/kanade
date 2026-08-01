@@ -34,7 +34,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_openresty_config() -> str:
         """OpenResty 配置概览 — 主配置路径、状态"""
         p = get_client()
-        data = p.get("/openresty/config")
+        data = p.get("/openresty")
         return fmt_generic(data, "OpenResty 配置")
 
     @mcp.tool()
@@ -104,7 +104,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_process_info(pid: int) -> str:
         """进程详情 — 按 PID 查询"""
         p = get_client()
-        data = p.get("/process/info", {"pid": pid})
+        data = p.get(f"/process/{pid}")
         return fmt_generic(data, f"进程详情 (PID {pid})")
 
     # -- 收集 handler 供 resources 复用 --

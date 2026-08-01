@@ -47,7 +47,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_system_log_files() -> str:
         """系统日志文件列表"""
         p = get_client()
-        data = p.get("/core/logs/system/files")
+        data = p.get("/logs/system/files")
         lines = [header("系统日志文件")]
         if isinstance(data, list):
             for f in data:
@@ -66,7 +66,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_executing_tasks() -> str:
         """正在执行的任务数"""
         p = get_client()
-        data = p.get("/core/tasks/executing")
+        data = p.get("/logs/tasks/executing/count")
         return fmt_generic(data, "正在执行的任务")
 
     # ------------------------------------------------------------------ #
@@ -98,9 +98,8 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_task_logs(rows: int = 20) -> str:
         """任务执行日志 — 系统任务记录"""
         p = get_client()
-        data = p.post("/core/logs/tasks", {
+        data = p.post("/logs/tasks/search", {
             "page": 1, "pageSize": rows,
-            "orderBy": "createdAt", "order": "descending",
         })
         lines, items = fmt_search(data, "任务执行日志")
         for log in items[:rows]:

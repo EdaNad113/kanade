@@ -113,7 +113,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_top_cpu() -> str:
         """CPU 占用最高的进程 Top10"""
         p = get_client()
-        data = p.get("/dashboard/top/cpu")
+        data = p.get("/dashboard/current/top/cpu")
         lines = [header("CPU 占用 Top10")]
         if isinstance(data, list):
             for i, proc in enumerate(data, 1):
@@ -133,7 +133,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_top_memory() -> str:
         """内存占用最高的进程 Top10"""
         p = get_client()
-        data = p.get("/dashboard/top/memory")
+        data = p.get("/dashboard/current/top/mem")
         lines = [header("内存占用 Top10")]
         if isinstance(data, list):
             for i, proc in enumerate(data, 1):
@@ -164,14 +164,14 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_node_info() -> str:
         """节点信息 — 当前节点运行状态"""
         p = get_client()
-        data = p.get("/dashboard/node")
+        data = p.get("/dashboard/current/node")
         return fmt_generic(data, "节点信息")
 
     @mcp.tool()
     def panel_app_launcher() -> str:
         """应用启动器 — 快捷启动的应用列表"""
         p = get_client()
-        data = p.get("/dashboard/launcher")
+        data = p.get("/dashboard/app/launcher")
         lines = [header("应用启动器")]
         if isinstance(data, list):
             for app in data:
@@ -195,7 +195,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_launcher_options() -> str:
         """启动器选项 — 自定义快捷方式"""
         p = get_client()
-        data = p.get("/dashboard/launcher/options")
+        data = p.post("/dashboard/app/launcher/option", {})
         lines = [header("启动器选项")]
         if isinstance(data, list):
             for opt in data:
@@ -214,7 +214,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_quick_jump() -> str:
         """快速跳转选项 — 常用导航"""
         p = get_client()
-        data = p.get("/dashboard/quick/jump")
+        data = p.get("/dashboard/quick/option")
         lines = [header("快速跳转")]
         if isinstance(data, list):
             for item in data:

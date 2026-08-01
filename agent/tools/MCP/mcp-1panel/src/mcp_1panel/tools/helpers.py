@@ -1,22 +1,6 @@
 """Formatting helpers for mcp-1panel tools (mirrors Node.js tools/helpers.js)."""
 
-from typing import Any, Callable, Dict, List, Optional, TypeVar
-
-F = TypeVar("F", bound=Callable)
-
-
-def safe(handler: F) -> F:
-    """Wrap a handler so that exceptions become 'ERR: ...' strings."""
-    import functools
-
-    @functools.wraps(handler)
-    def wrapper(*args, **kwargs):
-        try:
-            return handler(*args, **kwargs)
-        except Exception as e:
-            return f"ERR: {e}"
-
-    return wrapper  # type: ignore
+from typing import Any, Dict, List, Optional
 
 
 # ---------------------------------------------------------------------------

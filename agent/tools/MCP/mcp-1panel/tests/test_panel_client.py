@@ -112,6 +112,7 @@ class TestRequest:
     def test_get_success(self, client):
         """Successful GET returns the 'data' field from response."""
         mock_resp = MagicMock(spec=requests.Response)
+        mock_resp.status_code = 200
         mock_resp.json.return_value = {"code": 200, "data": {"key": "val"}}
 
         with patch("requests.request", return_value=mock_resp) as mock_req:
@@ -124,6 +125,7 @@ class TestRequest:
 
     def test_post_success(self, client):
         mock_resp = MagicMock(spec=requests.Response)
+        mock_resp.status_code = 200
         mock_resp.json.return_value = {"code": 200, "data": "ok"}
 
         with patch("requests.request", return_value=mock_resp) as mock_req:
@@ -149,6 +151,7 @@ class TestRequest:
 
     def test_delete_method(self, client):
         mock_resp = MagicMock(spec=requests.Response)
+        mock_resp.status_code = 200
         mock_resp.json.return_value = {"code": 200, "data": None}
 
         with patch("requests.request", return_value=mock_resp) as mock_req:
@@ -160,6 +163,7 @@ class TestRequest:
 
     def test_put_method(self, client):
         mock_resp = MagicMock(spec=requests.Response)
+        mock_resp.status_code = 200
         mock_resp.json.return_value = {"code": 200, "data": "updated"}
 
         with patch("requests.request", return_value=mock_resp) as mock_req:

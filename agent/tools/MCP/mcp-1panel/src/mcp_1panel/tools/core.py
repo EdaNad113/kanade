@@ -44,7 +44,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_settings() -> str:
         """面板基础设置 — 名称、端口、版本等"""
         p = get_client()
-        data = p.post("/settings/search", {"page": 1, "pageSize": 50})
+        data = p.post("/core/settings/search", {"page": 1, "pageSize": 50})
         info = {}
         if isinstance(data, list):
             for s in data:
@@ -64,28 +64,28 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_upgrade_info() -> str:
         """面板升级信息 — 当前版本、最新版本"""
         p = get_client()
-        data = p.get("/core/upgrade/info")
+        data = p.get("/core/settings/upgrade")
         return fmt_generic(data, "面板升级信息")
 
     @mcp.tool()
     def panel_ssl_cert_info() -> str:
         """面板 SSL 证书信息 — 域名、到期时间、颁发者"""
         p = get_client()
-        data = p.get("/core/ssl/info")
+        data = p.get("/core/settings/ssl/info")
         return fmt_generic(data, "面板 SSL 证书")
 
     @mcp.tool()
     def panel_dashboard_memo() -> str:
         """仪表盘备忘录 — 自定义备忘内容"""
         p = get_client()
-        data = p.get("/core/dashboard/memo")
+        data = p.get("/core/settings/memo")
         return fmt_generic(data, "仪表盘备忘录")
 
     @mcp.tool()
     def panel_login_setting() -> str:
         """登录认证设置 — 登录方式、安全策略"""
         p = get_client()
-        data = p.get("/core/login/setting")
+        data = p.get("/core/auth/setting")
         return fmt_generic(data, "登录设置")
 
     @mcp.tool()
@@ -114,7 +114,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_commands_list() -> str:
         """命令列表 — 所有已注册命令"""
         p = get_client()
-        data = p.get("/core/commands/list")
+        data = p.get("/core/commands/command")
         lines = [header("命令列表")]
         if isinstance(data, list):
             for cmd in data:
@@ -133,14 +133,14 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_system_address() -> str:
         """系统地址信息 — 面板访问地址、IP"""
         p = get_client()
-        data = p.get("/core/system/address")
+        data = p.get("/core/settings/interface")
         return fmt_generic(data, "系统地址")
 
     @mcp.tool()
     def panel_upgrade_releases() -> str:
         """面板升级发布日志 — 版本历史"""
         p = get_client()
-        data = p.get("/core/upgrade/releases")
+        data = p.get("/core/settings/upgrade/releases")
         lines = [header("版本发布历史")]
         if isinstance(data, list):
             for release in data:
@@ -162,14 +162,14 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_terminal_setting() -> str:
         """终端设置 — 字体、样式、安全配置"""
         p = get_client()
-        data = p.get("/core/terminal/setting")
+        data = p.post("/core/settings/terminal/search", {})
         return fmt_generic(data, "终端设置")
 
     @mcp.tool()
     def panel_available_status() -> str:
         """系统可用状态 — 各服务健康检查"""
         p = get_client()
-        data = p.get("/core/available/status")
+        data = p.get("/core/settings/search/available")
         lines = [header("系统可用状态")]
         if isinstance(data, dict):
             for k, v in data.items():
@@ -202,14 +202,14 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_release_notes(version: str) -> str:
         """版本发布说明 — 按版本查询"""
         p = get_client()
-        data = p.post("/core/upgrade/release", {"version": version})
+        data = p.post("/core/settings/upgrade/notes", {"version": version})
         return fmt_generic(data, f"版本发布说明: {version}")
 
     @mcp.tool()
     def panel_backup_client_info(type: str = "LOCAL") -> str:
         """备份账号基础信息"""
         p = get_client()
-        data = p.post("/core/backup/client/info", {"type": type})
+        data = p.get(f"/core/backups/client/{type}")
         return fmt_generic(data, f"备份账号信息 ({type})")
 
     # -- 收集 handler 供 resources 复用 --

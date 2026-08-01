@@ -1,6 +1,7 @@
 """MCP tools for database management via 1Panel API."""
 
 from typing import Any, Callable, Dict, List
+from urllib.parse import quote
 from mcp_1panel.tools.helpers import (
     icon_green,
     icon_red,
@@ -50,14 +51,14 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_mysql_status() -> str:
         """MySQL 运行状态 — 连接数、运行时间"""
         p = get_client()
-        data = p.get("/databases/mysql/status")
+        data = p.post("/databases/status", {})
         return fmt_generic(data, "MySQL 运行状态")
 
     @mcp.tool()
     def panel_mysql_variables() -> str:
         """MySQL 变量列表 — 重要配置参数"""
         p = get_client()
-        data = p.get("/databases/mysql/variables")
+        data = p.post("/databases/variables", {})
         lines = [header("MySQL 变量")]
         if isinstance(data, list):
             for var in data:
@@ -76,7 +77,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_mysql_collation() -> str:
         """MySQL 排序规则选项"""
         p = get_client()
-        data = p.get("/databases/mysql/collation")
+        data = p.post("/databases/format/options", {})
         lines = [header("MySQL 排序规则")]
         if isinstance(data, list):
             for coll in data:
@@ -94,7 +95,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_mysql_remote() -> str:
         """MySQL 远程访问配置"""
         p = get_client()
-        data = p.get("/databases/mysql/remote")
+        data = p.post("/databases/remote", {})
         return fmt_generic(data, "MySQL 远程访问配置")
 
     # ------------------------------------------------------------------ #
@@ -119,7 +120,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_redis_persistence() -> str:
         """Redis 持久化配置 — RDB/AOF 设置"""
         p = get_client()
-        data = p.get("/databases/redis/persistence")
+        data = p.post("/databases/redis/persistence/conf", {})
         return fmt_generic(data, "Redis 持久化配置")
 
     # ------------------------------------------------------------------ #
@@ -149,7 +150,7 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_db_detail_by_name(name: str) -> str:
         """数据库详情 — 按名称查询"""
         p = get_client()
-        data = p.get("/databases/db/detail", {"name": name})
+        data = p.get(f"/databases/db/{quote(name)}")
         return fmt_generic(data, f"数据库详情: {name}")
 
     @mcp.tool()
@@ -172,14 +173,14 @@ def register_tools(mcp, get_client, handlers=None):
     def panel_db_base_info(name: str, type: str = "mysql") -> str:
         """数据库基础信息 — 版本、大小"""
         p = get_client()
-        data = p.get("/databases/db/baseinfo", {"name": name, "type": type})
+        data = p.post("/databases/common/info", {"name": name, "type": type})
         return fmt_generic(data, f"数据库基础信息 ({type}:{name})")
 
     @mcp.tool()
     def panel_db_conf_file(type: str = "mysql") -> str:
         """数据库配置文件内容"""
         p = get_client()
-        data = p.get(f"/databases/db/config/{type}")
+        data = p.post("/databases/common/load/file", {"type": type})
         return fmt_generic(data, f"数据库配置文件 ({type})")
 
     @mcp.tool()
