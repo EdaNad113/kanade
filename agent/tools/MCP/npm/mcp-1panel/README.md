@@ -105,7 +105,28 @@ npm install -g @edanad113/mcp-1panel
 }
 ```
 
-> 不想全局安装时，也可以使用 npx：`"command": "npx"`、`"args": ["-y", "@edanad113/mcp-1panel"]`。
+> 不想全局安装时，也可以使用 npx（见下方「npx 模式」）。
+
+### npx 模式（免安装，无需全局安装）
+
+不需要 `npm install -g`，也不需要克隆源码，`npx` 会自动从 npm registry 拉取并运行最新版 `@edanad113/mcp-1panel`：
+
+```json
+{
+  "mcpServers": {
+    "mcp-1panel": {
+      "command": "npx",
+      "args": ["-y", "@edanad113/mcp-1panel"],
+      "env": {
+        "PANEL_HOST": "http://localhost:8080",
+        "PANEL_API_KEY": "<你的1Panel API密钥>"
+      }
+    }
+  }
+}
+```
+
+> 🇨🇳 国内网络直连 npm registry 拉取超时导致无法启动时，可在 `env` 中加入 `"npm_config_registry": "https://registry.npmmirror.com"` 使用国内镜像源。
 
 ### SSE 模式（远程）
 
