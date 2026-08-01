@@ -1,6 +1,6 @@
 {
   "name": "@edanad113/mcp-1panel",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "MCP Server for 1Panel - query your 1Panel server status through MCP protocol",
   "type": "module",
   "bin": {
