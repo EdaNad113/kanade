@@ -541,8 +541,41 @@ cp -r . /opt/1panel/mcp/mcp-1panel   # 把可运行目录放到固定路径
 
 | 变量 | 别名 | 必填 | 说明 |
 |------|------|------|------|
-| `PANEL_HOST` | — | ✅ | 1Panel 面板地址 |
-| `PANEL_API_KEY` | `PANEL_ACCESS_TOKEN` | ✅ | API 密钥（面板设置 → API 接口） |
+| `PANEL_HOST` | — | ✅ | 1Panel 面板访问地址（含 `http://` / `https://` 协议头，不要带 `/api/v2` 后缀） |
+| `PANEL_API_KEY` | `PANEL_ACCESS_TOKEN` | ✅ | 1Panel API 接口密钥（面板设置 → API 接口 → 创建密钥生成，不是登录密码） |
+
+### PANEL_HOST — 填什么？
+
+- 填写**你自己那台 1Panel 面板**的访问地址，以 `http://` 或 `https://` 开头，**不要带** `/api/v2` 路径（程序会自动拼接）。
+- 默认本地面板地址是 `http://localhost:8080`。
+- 如果面板改了端口、绑定了域名、或通过反向代理访问，就填实际的访问地址，例如：
+  - `http://192.168.1.100:8080`（局域网 IP + 端口）
+  - `https://panel.example.com`（域名 + HTTPS，需已配置证书）
+- ⚠️ 注意：不是 1Panel 官网，也不是别人搭建的面板，必须是你能登录、且持有 API 密钥的那台面板。
+
+### PANEL_API_KEY — 填什么？
+
+- 在 **1Panel 面板 → 设置 → API 接口** 中点击「创建密钥」生成的一串随机字符串。
+- **不是** 面板的登录密码。
+- 如果「API 接口」尚未开启，需要先在设置页打开接口功能，再创建密钥。
+- 别名写法：`PANEL_ACCESS_TOKEN` 与 `PANEL_API_KEY` 等价，两个填任意一个即可；都填时优先使用 `PANEL_API_KEY`。
+
+### 完整示例
+
+命令行启动：
+
+```bash
+PANEL_HOST=http://localhost:8080 PANEL_API_KEY=xxxxxxxxxxxxxxxx node src/index.js
+```
+
+MCP 客户端 `env` 配置：
+
+```json
+"env": {
+  "PANEL_HOST": "http://localhost:8080",
+  "PANEL_API_KEY": "xxxxxxxxxxxxxxxx"
+}
+```
 
 ---
 
