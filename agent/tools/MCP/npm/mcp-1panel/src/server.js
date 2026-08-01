@@ -5,6 +5,9 @@
  * Modular architecture. Tool definitions live in src/tools/*.js.
  * This file only handles MCP protocol wiring and startup.
  */
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -18,8 +21,12 @@ import {
 import { ALL_TOOLS } from "./tools/index.js";
 import { getResources, readResource } from "./resources.js";
 
+const pkgVersion = JSON.parse(
+  readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), "..", "package.json"), "utf8")
+).version;
+
 const server = new Server(
-  { name: "mcp-1panel", version: "0.1.0" },
+  { name: "mcp-1panel", version: pkgVersion },
   { capabilities: { tools: {}, resources: {} } }
 );
 

@@ -12,11 +12,28 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { existsSync } from "node:fs";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const pkgDir = resolve(__dirname, "..");
-const sdkPath = resolve(pkgDir, "node_modules", "@modelcontextprotocol", "sdk");
+const pkgDir = dirname(fileURLToPath(import.meta.url)) + "/..";
 
-if (!existsSync(sdkPath)) {
+// Walk up the node_modules chain like Node's own resolution, so this
+// works in every install layout (npm project, npx cache, global) where
+// dependencies are hoisted to a parent node_modules directory.
+function findSdk(startDir) {
+  let dir = startDir;
+  for (;;) {
+    const candidate = resolve(dir, "node_modules", "@modelcontextprotocol", "sdk");
+    if (existsSync(candidate)) return candidate;
+    const parent = dirname(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+}
+
+let sdkReady = true;
+if (!findSdk(pkgDir)) {
+  sdkReady = false;
+}
+
+if (!sdkReady) {
   console.error("[mcp-1panel] node_modules/@modelcontextprotocol/sdk not found — running npm install...");
   try {
     execSync("npm install", {
