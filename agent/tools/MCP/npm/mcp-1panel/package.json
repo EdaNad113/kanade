@@ -20,5 +20,9 @@
     "type": "git",
     "url": "https://github.com/EdaNad113/kanade.git",
     "directory": "agent/tools/MCP/npm/mcp-1panel"
+  },
+  "scripts": {
+    "test": "node --test src/panel-client.test.js",
+    "prepublishOnly": "npm test"
   }
 }

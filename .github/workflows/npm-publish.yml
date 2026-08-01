@@ -1,33 +1,49 @@
-# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
-# For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
-
-name: Node.js Package
+# Publish @kanade/mcp-1panel to the npm registry.
+#
+# Triggers:
+#   - a GitHub Release is created (recommended)
+#   - manual run via Actions -> Run workflow
+#
+# Prerequisite: an npm granular access token with "Bypass 2FA" enabled,
+# added as a GitHub Actions secret named `npm_token`.
+name: Publish npm package
 
 on:
   release:
     types: [created]
+  workflow_dispatch:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent/tools/MCP/npm/mcp-1panel
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: agent/tools/MCP/npm/mcp-1panel/package-lock.json
       - run: npm ci
       - run: npm test
 
-  publish-npm:
-    needs: build
+  publish:
+    needs: test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent/tools/MCP/npm/mcp-1panel
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
+          cache: npm
+          cache-dependency-path: agent/tools/MCP/npm/mcp-1panel/package-lock.json
       - run: npm ci
-      - run: npm publish
+      - run: npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
