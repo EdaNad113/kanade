@@ -1,0 +1,3 @@
+[console_scripts]
+token-balance = token_balance.cli:main
+token-balance-mcp = token_balance.mcp_server:main

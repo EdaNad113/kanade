@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "token-balance"
+version = "0.0.3"  # v0.0.3：生成模板包含全部平台，README 重排
+description = "多厂商 Token 余额查询工具（DeepSeek / 硅基流动 / Kimi / OpenAI / NEW API / 自定义站点等）"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "aiohttp>=3.8",
+    "PyYAML>=6.0",
+    "mcp>=1.0,<2.0",  # mcp 2.x 移除了 mcp.server.fastmcp，暂不兼容
+]
+
+[project.scripts]
+token-balance = "token_balance.cli:main"
+token-balance-mcp = "token_balance.mcp_server:main"
+
+[tool.setuptools]
+packages = ["token_balance"]
